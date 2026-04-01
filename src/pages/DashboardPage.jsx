@@ -48,11 +48,17 @@ function numWords(n) {
   if (rem) r += chunk(rem);
   return r.trim();
 }
-function amtWords(v) {
+function amtWords(v, currency = "USD") {
   const n = parseFloat(v) || 0;
   const d = Math.floor(n);
   const c = Math.round((n - d) * 100);
-  return numWords(d) + " Dollars" + (c > 0 ? " and " + numWords(c) + " Cents" : "") + " Only";
+  let curr = "Dollars";
+  let frac = "Cents";
+  if (currency === "INR") { curr = "Rupees"; frac = "Paise"; }
+  else if (currency === "EUR") { curr = "Euros"; frac = "Cents"; }
+  else if (currency === "GBP") { curr = "Pounds"; frac = "Pence"; }
+  
+  return numWords(d) + " " + curr + (c > 0 ? " and " + numWords(c) + " " + frac : "") + " Only";
 }
 
 const DEFAULT_TC = [
@@ -75,16 +81,17 @@ const emptyForm = () => ({
   dispatchedThrough: "", destination: "", termsOfDelivery: "",
   signatoryCompany: "", pan: "",
 });
-const emptyItems = () => [{ id: Date.now(), description: "", hsn: "", dueOn: "", quantity: "", unitPrice: "", unit: "Nos", amount: "" }];
-const UNITS = ["Nos", "Pcs", "Kg", "Ltr", "Mtr", "Box", "Set", "Pair", "Roll", "Sheet"];
+const emptyItems = () => [{ id: Date.now(), description: "", subItems: [], hsn: "", dueOn: "", quantity: "", unitPrice: "", unit: "NOS", amount: "" }];
+const UNITS = ["NOS", "PCS", "KGS", "MTR", "LTR", "BOX", "BAG", "BTL", "CTN", "PKG", "SET", "GM"];
 const newItem = () => ({
   id: Date.now() + Math.random(),
   description: "",
+  subItems: [],
   hsn: "",
   dueOn: "",
   quantity: "",
   unitPrice: "",
-  unit: "Nos",
+  unit: "NOS",
   amount: "",
 });
 const defaultForm = () => ({
@@ -119,11 +126,12 @@ const defaultItems = () => [
   {
     id: 1,
     description: "BCT Rubber Stopper Open Type 13-1F (HSN Code- 4016 9990.90)",
+    subItems: [],
     hsn: "4016 9990.90",
     dueOn: "30th May 2026",
     quantity: "10500000",
     unitPrice: "0.00435",
-    unit: "Nos",
+    unit: "NOS",
     amount: "45675.00",
   },
 ];
@@ -230,7 +238,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .empty-d{font-size:.85rem;line-height:1.6;margin-bottom:1.5rem;}
 
 /* ─ FORM ─ */
-.form-wrap{max-width:960px;}
+.form-wrap{max-width:1200px;}
 .sec-card{background:#fff;border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;border:1px solid var(--border);box-shadow:var(--shadow);}
 .sec-hd{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);}
 .sec-num{width:26px;height:26px;background:var(--teal);color:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;}
@@ -399,7 +407,7 @@ function exportCSV(form, items, tc) {
     ]),
     [],
     ["", "", "", "", "", "", "GRAND TOTAL", gt.toFixed(2)],
-    ["Amount in Words", amtWords(gt)],
+    ["Amount in Words", amtWords(gt, form.currency)],
     [],
     ["TERMS & CONDITIONS"],
     ...tc.map((t, i) => [i + 1, t]),
@@ -440,7 +448,7 @@ function sendEmail(form, items, gt) {
     ),
     ``,
     `Total: ${form.currency} ${gt.toFixed(2)}`,
-    `(${amtWords(gt)})`,
+    `(${amtWords(gt, form.currency)})`,
     ``,
     `Regards,`,
     form.invoiceName,
@@ -589,16 +597,25 @@ function PODoc({ form, items, tc, id = "po-document" }) {
         <tbody>
           {items.map((it, i) => {
             const amt = parseFloat(it.amount) || parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0) || 0;
+            const rowSpan = 1 + (it.subItems?.length || 0);
             return (
-              <tr key={it.id}>
-                <td className="po-center">{i + 1}</td>
-                <td>{it.description}</td>
-                <td className="po-center">{it.dueOn}</td>
-                <td className="po-right">{Number(it.quantity || 0).toLocaleString()}</td>
-                <td className="po-right">{it.unitPrice}</td>
-                <td className="po-center">{it.unit}</td>
-                <td className="po-amt">{amt.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-              </tr>
+              <React.Fragment key={it.id}>
+                <tr>
+                  <td className="po-center" style={{ verticalAlign: "middle" }}>{i + 1}</td>
+                  <td style={{ verticalAlign: "middle" }}>{it.description}</td>
+                  <td rowSpan={rowSpan} className="po-center" style={{ verticalAlign: "middle" }}>{it.dueOn}</td>
+                  <td rowSpan={rowSpan} className="po-right" style={{ verticalAlign: "middle" }}>{Number(it.quantity || 0).toLocaleString()}</td>
+                  <td rowSpan={rowSpan} className="po-right" style={{ verticalAlign: "middle" }}>{it.unitPrice}</td>
+                  <td rowSpan={rowSpan} className="po-center" style={{ verticalAlign: "middle" }}>{it.unit}</td>
+                  <td rowSpan={rowSpan} className="po-amt" style={{ verticalAlign: "middle" }}>{amt.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                </tr>
+                {it.subItems && it.subItems.map((sub, j) => (
+                  <tr key={`${it.id}-sub-${j}`}>
+                    <td className="po-center" style={{ verticalAlign: "middle", fontWeight: "bold" }}>{`${i+1}.${j+1}`}</td>
+                    <td style={{ verticalAlign: "middle" }}>{sub}</td>
+                  </tr>
+                ))}
+              </React.Fragment>
             );
           })}
           <tr>
@@ -619,7 +636,7 @@ function PODoc({ form, items, tc, id = "po-document" }) {
             <td style={{ width: "55%", borderTop: "none" }}>
               <div className="po-lbl">Amount Chargeable (in words)</div>
               <div className="po-bold" style={{ marginTop: 3 }}>
-                {amtWords(gt)}
+                {amtWords(gt, form.currency)}
               </div>
               {form.pan && <div style={{ marginTop: 6, fontSize: 10 }}>Company's PAN: {form.pan}</div>}
             </td>
@@ -663,11 +680,8 @@ function PODoc({ form, items, tc, id = "po-document" }) {
 
 function TeamMembersPage() {
   const TEAM = [
-    { name: "Priya Sharma", role: "Purchase Manager", initials: "PS", color: "#0D9488" },
-    { name: "Rajan Verma", role: "Finance Head", initials: "RV", color: "#D97706" },
-    { name: "Sneha Gupta", role: "Accounts Executive", initials: "SG", color: "#7C3AED" },
-    { name: "Deepak Joshi", role: "Admin", initials: "DJ", color: "#DB2777" },
-    { name: "Admin User", role: "Super Admin", initials: "AU", color: "#0D9488", isAdmin: true },
+    { name: "Gurvinder Singh", role: "Chartered Accountant", initials: "GS", color: "#0D9488" },
+    { name: "Shadab Khan", role: "Finance Head", initials: "SK", color: "#D97706" },
   ];
 
   return (

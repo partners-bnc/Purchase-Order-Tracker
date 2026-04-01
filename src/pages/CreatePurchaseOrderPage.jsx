@@ -1,6 +1,6 @@
 import React from "react";
 
-const UNITS = ["Nos", "Pcs", "Kg", "Ltr", "Mtr", "Box", "Set", "Pair", "Roll", "Sheet"];
+const UNITS = ["NOS", "PCS", "KGS", "MTR", "LTR", "BOX", "BAG", "BTL", "CTN", "PKG", "SET", "GM"];
 
 export default function CreatePurchaseOrderPage({
   form, items, tc, gt, amtWords,
@@ -69,42 +69,73 @@ export default function CreatePurchaseOrderPage({
           <table className="items-tbl">
             <thead>
               <tr>
-                <th style={{ width: 40 }}>S.No.</th>
-                <th>Description of Goods</th>
-                <th style={{ width: 110 }}>HSN Code</th>
-                <th style={{ width: 115 }}>Due On</th>
-                <th style={{ width: 90 }}>Quantity</th>
-                <th style={{ width: 100 }}>Unit Price ({form.currency})</th>
-                <th style={{ width: 70 }}>Unit</th>
-                <th style={{ width: 110, textAlign: "right" }}>Amount ({form.currency})</th>
-                <th style={{ width: 32 }}></th>
+                <th style={{ minWidth: 50, width: "4%" }}>S.No.</th>
+                <th style={{ minWidth: 240 }}>Description of Goods</th>
+                <th style={{ minWidth: 120, width: "12%" }}>HSN Code</th>
+                <th style={{ minWidth: 130, width: "12%" }}>Due On</th>
+                <th style={{ minWidth: 100, width: "10%" }}>Quantity</th>
+                <th style={{ minWidth: 120, width: "12%" }}>Unit Price ({form.currency})</th>
+                <th style={{ minWidth: 90, width: "8%" }}>Unit</th>
+                <th style={{ minWidth: 130, width: "13%", textAlign: "right" }}>Amount ({form.currency})</th>
+                <th style={{ width: 40 }}></th>
               </tr>
             </thead>
             <tbody>
-              {items.map((it, i) => (
-                <tr key={it.id}>
-                  <td style={{ textAlign: "center", paddingTop: ".6rem", fontWeight: 600, color: "var(--muted)" }}>{i + 1}</td>
-                  <td><input value={it.description} onChange={(e) => updateItem(it.id, "description", e.target.value)} placeholder="Item description" style={{ minWidth: 180 }} /></td>
-                  <td><input value={it.hsn} onChange={(e) => updateItem(it.id, "hsn", e.target.value)} placeholder="4016 9990.90" /></td>
-                  <td><input value={it.dueOn} onChange={(e) => updateItem(it.id, "dueOn", e.target.value)} placeholder="30th May 2026" /></td>
-                  <td><input value={it.quantity} onChange={(e) => updateItem(it.id, "quantity", e.target.value)} placeholder="0" style={{ textAlign: "right" }} /></td>
-                  <td><input value={it.unitPrice} onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)} placeholder="0.00" style={{ textAlign: "right" }} /></td>
-                  <td><select value={it.unit} onChange={(e) => updateItem(it.id, "unit", e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select></td>
-                  <td className="amt-cell">{(parseFloat(it.amount) || (parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0)) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                  <td><button className="del-btn" onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>✕</button></td>
-                </tr>
-              ))}
+              {items.map((it, i) => {
+                const rowSpan = 1 + (it.subItems?.length || 0);
+                return (
+                  <React.Fragment key={it.id}>
+                    <tr>
+                      <td style={{ textAlign: "center", paddingTop: ".6rem", fontWeight: 600, color: "var(--muted)", verticalAlign: "middle" }}>{i + 1}</td>
+                      <td style={{ verticalAlign: "middle" }}>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <input value={it.description} onChange={(e) => updateItem(it.id, "description", e.target.value)} placeholder="Item description" style={{ minWidth: 180, flex: 1 }} />
+                          <button type="button" onClick={() => {
+                            const newSub = [...(it.subItems || []), ""];
+                            updateItem(it.id, "subItems", newSub);
+                          }} style={{ padding: "0 8px", cursor: "pointer", border: "1.5px solid var(--border)", background: "var(--teal-l)", color: "var(--teal-d)", borderRadius: "6px", fontWeight: 600 }} title="Add Sub Item">＋</button>
+                        </div>
+                      </td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.hsn} onChange={(e) => updateItem(it.id, "hsn", e.target.value)} placeholder="4016 9990.90" /></td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.dueOn} onChange={(e) => updateItem(it.id, "dueOn", e.target.value)} placeholder="30th May 2026" /></td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.quantity} onChange={(e) => updateItem(it.id, "quantity", e.target.value)} placeholder="0" style={{ textAlign: "right" }} /></td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.unitPrice} onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)} placeholder="0.00" style={{ textAlign: "right" }} /></td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><select value={it.unit} onChange={(e) => updateItem(it.id, "unit", e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select></td>
+                      <td rowSpan={rowSpan} className="amt-cell" style={{ verticalAlign: "middle" }}>{(parseFloat(it.amount) || (parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0)) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><button className="del-btn" onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>✕</button></td>
+                    </tr>
+                    {it.subItems && it.subItems.map((sub, j) => (
+                      <tr key={`${it.id}-sub-${j}`}>
+                        <td style={{ textAlign: "center", verticalAlign: "middle", fontWeight: 600, color: "var(--muted)", fontSize: "0.85em" }}>{`${i+1}.${j+1}`}</td>
+                        <td style={{ verticalAlign: "middle" }}>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <input value={sub} onChange={(e) => {
+                              const newSub = [...it.subItems];
+                              newSub[j] = e.target.value;
+                              updateItem(it.id, "subItems", newSub);
+                            }} placeholder="Sub description" style={{ minWidth: 150, flex: 1 }} />
+                            <button type="button" onClick={() => {
+                              const newSub = it.subItems.filter((_, idx) => idx !== j);
+                              updateItem(it.id, "subItems", newSub);
+                            }} style={{ padding: "0 8px", cursor: "pointer", border: "1.5px solid #FECACA", background: "#FEE2E2", color: "#B91C1C", borderRadius: "6px", fontWeight: 600 }} title="Remove Sub Item">ー</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        <button className="add-row-btn" onClick={() => setItems((p) => [...p, { id: Date.now() + Math.random(), description: "", hsn: "", dueOn: "", quantity: "", unitPrice: "", unit: "Nos", amount: "" }])}>＋ Add Item Row</button>
+        <button className="add-row-btn" onClick={() => setItems((p) => [...p, { id: Date.now() + Math.random(), description: "", subItems: [], hsn: "", dueOn: "", quantity: "", unitPrice: "", unit: "NOS", amount: "" }])}>＋ Add Item Row</button>
         <div className="total-bar">
           <div className="total-box">
             <div className="tot-lbl">Grand Total ({form.currency})</div>
             <div className="tot-amt">{gt.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
           </div>
         </div>
-        <div className="words-box"><strong>Amount in Words:</strong> {amtWords(gt)}</div>
+        <div className="words-box"><strong>Amount in Words:</strong> {amtWords(gt, form.currency)}</div>
       </div>
 
       <div className="sec-card">
