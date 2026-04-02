@@ -22,7 +22,7 @@ export default function AppShell({
     <div className="app-shell">
       <div className="sidebar">
         {/* You can adjust the marginTop here to shift the PO Tracker up or down */}
-        <div className="sb-brand" style={{ marginTop: "-30px", height: "65px" }}>
+        <div className="sb-brand" style={{ marginTop: "-36px", height: "65px" }}>
           <div className="sb-brand-ic">PO</div>
           <div className="sb-brand-name" style={{ fontSize: "1.3rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>PO Tracker</div>
         </div>

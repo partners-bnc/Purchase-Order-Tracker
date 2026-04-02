@@ -94,11 +94,17 @@ const newItem = () => ({
   unit: "NOS",
   amount: "",
 });
-const defaultForm = () => ({
-  voucherNo: "MB/25-26/66",
-  date: "30-Mar-26",
+const defaultForm = () => {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()];
+  const yy = String(today.getFullYear()).slice(-2);
+  const dateStr = `${dd}-${mon}-${yy}`;
+  return ({
+  voucherNo: "MB/26-27/01",
+  date: dateStr,
   currency: "USD",
-  refNo: "MB/25-26/66",
+  refNo: "MB/26-27/01",
   refDate: "",
   otherRef: "",
   invoiceName: "Medivation Bio Private Limited",
@@ -122,6 +128,7 @@ const defaultForm = () => ({
   signatoryCompany: "Medivation Bio Private Limited",
   pan: "AAPCM3823P",
 });
+};
 const defaultItems = () => [
   {
     id: 1,
@@ -319,12 +326,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .po-tbl td,.po-tbl th{border:1px solid #000;padding:5px 7px;vertical-align:top;font-size:10.5px;}
 .po-lbl{font-size:9px;color:#555;margin-bottom:2px;}
 .po-val{font-weight:500;}
-.po-bold{font-weight:bold;}
+.po-bold{font-weight:600;}
 .po-center{text-align:center;}
 .po-right{text-align:right;}
 .po-items th{background:#f5f5f5;font-weight:bold;font-size:9.5px;text-align:center;border:1px solid #000;padding:4px 6px;}
 .po-items td{border:1px solid #000;padding:4px 6px;font-size:10px;}
-.po-amt{font-weight:bold;text-align:right;}
+.po-amt{font-weight:600;text-align:center;}
 @media print{.modal-toolbar,.modal-bg{display:none!important;} .po-doc{padding:0;}}
 `;
 
@@ -333,7 +340,7 @@ function printElement(elId) {
   const el = document.getElementById(elId);
   if (!el) return;
   const w = window.open("", "_blank", "width=900,height=700");
-  w.document.write(`<!DOCTYPE html><html><head><title>Purchase Order</title>
+  w.document.write(`<!DOCTYPE html><html><head><title></title>
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
       body{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;}
@@ -341,10 +348,12 @@ function printElement(elId) {
       td,th{border:1px solid #000;padding:5px 7px;vertical-align:top;font-size:10.5px;}
       .po-title{text-align:center;font-size:15px;font-weight:bold;margin-bottom:10px;letter-spacing:1px;}
       .po-lbl{font-size:9px;color:#555;margin-bottom:2px;}
-      .po-bold{font-weight:bold;}
+      .po-bold{font-weight:600;}
       .po-center{text-align:center;}
       .po-right{text-align:right;}
+      .po-amt{font-weight:600;text-align:center;}
       th{background:#f5f5f5;font-weight:bold;font-size:9.5px;text-align:center;}
+      @page{margin:10mm;}
     </style>
   </head><body>${el.innerHTML}</body></html>`);
   w.document.close();
@@ -484,7 +493,7 @@ function PODoc({ form, items, tc, id = "po-document" }) {
             <td style={{ width: "25%", verticalAlign: "top" }}>
               <div className="po-lbl">VOUCHER NO</div>
               <div className="po-bold">{form.voucherNo}</div>
-              <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #000" }}>
+              <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #000", margin: "6px -7px 0", padding: "6px 7px 0" }}>
                 <div className="po-lbl">Reference No. &amp; Date</div>
                 <div className="po-bold">
                   {form.refNo}
@@ -495,7 +504,7 @@ function PODoc({ form, items, tc, id = "po-document" }) {
             <td style={{ width: "25%", verticalAlign: "top" }}>
               <div className="po-lbl">Dated</div>
               <div className="po-bold">{form.date}</div>
-              <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #000" }}>
+              <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #000", margin: "6px -7px 0", padding: "6px 7px 0" }}>
                 <div className="po-lbl">Other References</div>
                 <div>{form.otherRef || "—"}</div>
               </div>
