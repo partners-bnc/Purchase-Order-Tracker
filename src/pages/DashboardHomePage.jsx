@@ -11,10 +11,10 @@ export default function DashboardHomePage({
   formatCurrency,
 }) {
   const statCards = [
-    { title: "Total Purchase Orders", value: metrics.totalOrders,   icon: "📋", bg: "#EFF6FF", trend: "All time", tc: "up" },
-    { title: "Total Amount",          value: formatCurrency ? formatCurrency(metrics.totalAmount) : metrics.totalAmount, icon: "💰", bg: "#F0FDF4", trend: "Grand total", tc: "up" },
-    { title: "Pending Orders",        value: metrics.pendingOrders,  icon: "⏳", bg: "#FFFBEB", trend: "Awaiting action", tc: "warn" },
-    { title: "Completed Orders",      value: metrics.completedOrders,icon: "✅", bg: "#F0FDFA", trend: "Fulfilled", tc: "up" },
+    { title: "Total Purchase Orders", value: metrics.totalOrders, icon: "📋", bg: "#EFF6FF", trend: "All time", tc: "up" },
+    { title: "Total Amount", value: formatCurrency ? formatCurrency(metrics.totalAmount) : metrics.totalAmount, icon: "💰", bg: "#F0FDF4", trend: "Grand total", tc: "up" },
+    { title: "Pending Orders", value: metrics.pendingOrders, icon: "⏳", bg: "#FFFBEB", trend: "Awaiting action", tc: "warn" },
+    { title: "Completed Orders", value: metrics.completedOrders, icon: "✅", bg: "#F0FDFA", trend: "Fulfilled", tc: "up" },
   ];
 
   return (
@@ -66,8 +66,8 @@ export default function DashboardHomePage({
               </div>
               <div className="po-card-footer">
                 <button className="btn-sm btn-sm-teal" onClick={() => onViewPO(po)}>👁 View</button>
-                <button className="btn-sm btn-sm-out"  onClick={() => onEditPO(po)}>✏ Edit</button>
-                <button className="btn-sm btn-sm-out"  onClick={() => onEmailPO(po)}>✉ Email</button>
+                <button className="btn-sm btn-sm-out" onClick={() => onEditPO(po)}>✏ Edit</button>
+                <button className="btn-sm btn-sm-out" onClick={() => onEmailPO(po)}>✉ Email</button>
                 <button className="btn-sm btn-sm-red" style={{ marginLeft: "auto" }} onClick={() => onDeletePO(po.id)}>✕</button>
               </div>
             </div>

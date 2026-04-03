@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LandingPage from "../components/LandingPage";
 import AppShell from "../components/AppShell";
 import DashboardHomePage from "./DashboardHomePage";
 import CreatePurchaseOrderPage from "./CreatePurchaseOrderPage";
 import ImportFromExcelPage from "./ImportFromExcelPage";
+import { supabase } from "../supabaseClient";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 const ones = [
@@ -57,7 +58,7 @@ function amtWords(v, currency = "USD") {
   if (currency === "INR") { curr = "Rupees"; frac = "Paise"; }
   else if (currency === "EUR") { curr = "Euros"; frac = "Cents"; }
   else if (currency === "GBP") { curr = "Pounds"; frac = "Pence"; }
-  
+
   return numWords(d) + " " + curr + (c > 0 ? " and " + numWords(c) + " " + frac : "") + " Only";
 }
 
@@ -96,38 +97,38 @@ const newItem = () => ({
 });
 const defaultForm = () => {
   const today = new Date();
-  const dd = String(today.getDate()).padStart(2,'0');
-  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()];
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][today.getMonth()];
   const yy = String(today.getFullYear()).slice(-2);
   const dateStr = `${dd}-${mon}-${yy}`;
   return ({
-  voucherNo: "MB/26-27/01",
-  date: dateStr,
-  currency: "USD",
-  refNo: "MB/26-27/01",
-  refDate: "",
-  otherRef: "",
-  invoiceName: "Medivation Bio Private Limited",
-  invoiceAddress: "SIDCO Industrial Estate Lane, SIDCO Industrial Complex,\nBari Brahmana EPIP, Samba, Jammu",
-  invoiceGstin: "01AAPCM3823P1Z5",
-  invoiceState: "Jammu and Kashmir",
-  invoiceStateCode: "01",
-  invoiceCin: "U33119DL2022PTC392696",
-  consigneeName: "Medivation Bio Private Limited",
-  consigneeAddress: "SIDCO Industrial Estate Lane, SIDCO Industrial Complex,\nBari Brahmana EPIP, Samba, Jammu",
-  consigneeGstin: "01AAPCM3823P1Z5",
-  consigneeState: "Jammu and Kashmir",
-  consigneeStateCode: "01",
-  supplierName: "JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD",
-  supplierAddress: "NO.166, HETUN ROAD, LIGANG TOWN, JIANGYIN CITY, JIANGSU, CHINA.",
-  supplierMob: "+86 133611660522",
-  supplierEmail: "hyyeon@jiangyinhongmeng.com",
-  dispatchedThrough: "",
-  destination: "",
-  termsOfDelivery: "",
-  signatoryCompany: "Medivation Bio Private Limited",
-  pan: "AAPCM3823P",
-});
+    voucherNo: "MB/26-27/01",
+    date: dateStr,
+    currency: "USD",
+    refNo: "MB/26-27/01",
+    refDate: "",
+    otherRef: "",
+    invoiceName: "Medivation Bio Private Limited",
+    invoiceAddress: "SIDCO Industrial Estate Lane, SIDCO Industrial Complex,\nBari Brahmana EPIP, Samba, Jammu",
+    invoiceGstin: "01AAPCM3823P1Z5",
+    invoiceState: "Jammu and Kashmir",
+    invoiceStateCode: "01",
+    invoiceCin: "U33119DL2022PTC392696",
+    consigneeName: "Medivation Bio Private Limited",
+    consigneeAddress: "SIDCO Industrial Estate Lane, SIDCO Industrial Complex,\nBari Brahmana EPIP, Samba, Jammu",
+    consigneeGstin: "01AAPCM3823P1Z5",
+    consigneeState: "Jammu and Kashmir",
+    consigneeStateCode: "01",
+    supplierName: "JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD",
+    supplierAddress: "NO.166, HETUN ROAD, LIGANG TOWN, JIANGYIN CITY, JIANGSU, CHINA.",
+    supplierMob: "+86 133611660522",
+    supplierEmail: "hyyeon@jiangyinhongmeng.com",
+    dispatchedThrough: "",
+    destination: "",
+    termsOfDelivery: "",
+    signatoryCompany: "Medivation Bio Private Limited",
+    pan: "AAPCM3823P",
+  });
 };
 const defaultItems = () => [
   {
@@ -151,9 +152,22 @@ const CSS = `
   --teal:#0D9488;--teal-d:#0F766E;--teal-l:#F0FDFA;--teal-m:#CCFBF1;
   --bg:#F0FDFA;--white:#FFFFFF;--border:#E2E8F0;--text:#0F172A;
   --muted:#64748B;--muted-l:#94A3B8;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);
-  --red:#EF4444;--green:#16A34A;--blue:#2563EB;--amber:#D97706;
+  --red:#EF4444;--red-d:#B91C1C;--red-l:#FEF2F2;--green:#16A34A;--blue:#2563EB;--amber:#D97706;
 }
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* ─ DELETE MODAL ─ */
+.confirm-box{background:#fff;width:90%;max-width:380px;border-radius:18px;padding:1.5rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);position:relative;animation:popIn 0.25s ease-out;}
+@keyframes popIn { from{transform:scale(0.9);opacity:0;} to{transform:scale(1);opacity:1;} }
+.confirm-ic{width:50px;height:50px;background:var(--red-l);color:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.15rem;}
+.confirm-t{font-size:1.15rem;font-weight:700;margin-bottom:.5rem;color:var(--text);}
+.confirm-d{font-size:.875rem;color:var(--muted);line-height:1.5;margin-bottom:1.5rem;}
+.confirm-btns{display:flex;gap:.75rem;}
+.btn-cf{flex:1;padding:.65rem;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:all .15s;}
+.btn-cf-del{background:var(--red);color:#fff;}
+.btn-cf-del:hover{background:var(--red-d);}
+.btn-cf-can{background:#F1F5F9;color:var(--muted);}
+.btn-cf-can:hover{background:#E2E8F0;color:var(--text);}
 
 /* ─ LANDING ─ */
 .landing{height:100vh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
@@ -340,10 +354,11 @@ function printElement(elId) {
   const el = document.getElementById(elId);
   if (!el) return;
   const w = window.open("", "_blank", "width=900,height=700");
-  w.document.write(`<!DOCTYPE html><html><head><title></title>
+  w.document.write(`<!DOCTYPE html><html><head><title>&#8203;</title>
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
-      body{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;}
+      body{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;padding:10mm;}
+      .print-container { width: 190mm; margin: 0 auto; }
       table{border-collapse:collapse;width:100%;}
       td,th{border:1px solid #000;padding:5px 7px;vertical-align:top;font-size:10.5px;}
       .po-title{text-align:center;font-size:15px;font-weight:bold;margin-bottom:10px;letter-spacing:1px;}
@@ -353,9 +368,11 @@ function printElement(elId) {
       .po-right{text-align:right;}
       .po-amt{font-weight:600;text-align:center;}
       th{background:#f5f5f5;font-weight:bold;font-size:9.5px;text-align:center;}
-      @page{margin:10mm;}
+      @page{size:A4; margin:0;}
+      @page :first{ margin-top:0; }
+      html,body{-webkit-print-color-adjust:exact;}
     </style>
-  </head><body>${el.innerHTML}</body></html>`);
+  </head><body><div class="print-container">${el.innerHTML}</div></body></html>`);
   w.document.close();
   w.focus();
   setTimeout(() => {
@@ -614,13 +631,13 @@ function PODoc({ form, items, tc, id = "po-document" }) {
                   <td style={{ verticalAlign: "middle" }}>{it.description}</td>
                   <td rowSpan={rowSpan} className="po-center" style={{ verticalAlign: "middle" }}>{it.dueOn}</td>
                   <td rowSpan={rowSpan} className="po-right" style={{ verticalAlign: "middle" }}>{Number(it.quantity || 0).toLocaleString()}</td>
-                  <td rowSpan={rowSpan} className="po-right" style={{ verticalAlign: "middle" }}>{it.unitPrice}</td>
+                  <td rowSpan={rowSpan} className="po-center" style={{ verticalAlign: "middle" }}>{it.unitPrice}</td>
                   <td rowSpan={rowSpan} className="po-center" style={{ verticalAlign: "middle" }}>{it.unit}</td>
                   <td rowSpan={rowSpan} className="po-amt" style={{ verticalAlign: "middle" }}>{amt.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
                 </tr>
                 {it.subItems && it.subItems.map((sub, j) => (
                   <tr key={`${it.id}-sub-${j}`}>
-                    <td className="po-center" style={{ verticalAlign: "middle", fontWeight: "bold" }}>{`${i+1}.${j+1}`}</td>
+                    <td className="po-center" style={{ verticalAlign: "middle", fontWeight: "bold" }}>{`${i + 1}.${j + 1}`}</td>
                     <td style={{ verticalAlign: "middle" }}>{sub}</td>
                   </tr>
                 ))}
@@ -735,6 +752,7 @@ export default function DashboardPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewPO, setPreviewPO] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   const sf = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const gt = items.reduce(
@@ -756,28 +774,108 @@ export default function DashboardPage() {
       })
     );
 
-  const handleSaveAndGenerate = () => {
-    if (editingId) {
-      // Update existing PO
-      setPoList((p) =>
-        p.map((po) =>
-          po.id === editingId
-            ? { ...po, voucherNo: form.voucherNo, date: form.date, supplierName: form.supplierName,
-                invoiceName: form.invoiceName, currency: form.currency, total: gt,
-                itemCount: items.length, form: { ...form }, items: [...items], tc: [...tc] }
-            : po
-        )
-      );
-      setEditingId(null);
-    } else {
-      const po = {
-        id: Date.now(), voucherNo: form.voucherNo, date: form.date,
-        supplierName: form.supplierName, invoiceName: form.invoiceName,
-        currency: form.currency, total: gt, status: "Active",
-        itemCount: items.length, form: { ...form }, items: [...items], tc: [...tc],
+  const fetchPOs = async () => {
+    const { data: pos, error } = await supabase.from("purchase_orders").select("*, po_items(*, po_sub_items(*)), po_terms(*)");
+    if (error) { console.error("Error fetching POs:", error); return; }
+    
+    const mapped = pos.map(dbPo => {
+      const mappedItems = dbPo.po_items.sort((a,b) => a.item_index - b.item_index).map(it => ({
+         id: it.id, 
+         description: it.description || "",
+         hsn: it.hsn || "", 
+         dueOn: it.due_on || "",
+         quantity: it.quantity || "",
+         unitPrice: it.unit_price || "",
+         unit: it.unit || "NOS",
+         amount: it.amount || "",
+         subItems: it.po_sub_items.sort((a,b) => a.sub_index - b.sub_index).map(sub => sub.description)
+      }));
+      const mappedTc = dbPo.po_terms.sort((a,b) => a.term_index - b.term_index).map(t => t.content);
+
+      return {
+        id: dbPo.id,
+        voucherNo: dbPo.voucher_no,
+        date: dbPo.date,
+        supplierName: dbPo.supplier_name,
+        invoiceName: dbPo.invoice_name,
+        currency: dbPo.currency,
+        total: parseFloat(dbPo.grand_total) || 0,
+        status: dbPo.status || "Active",
+        itemCount: mappedItems.length,
+        form: {
+          voucherNo: dbPo.voucher_no || "", date: dbPo.date || "", currency: dbPo.currency || "USD",
+          refNo: dbPo.ref_no || "", refDate: dbPo.ref_date || "", otherRef: dbPo.other_ref || "",
+          invoiceName: dbPo.invoice_name || "", invoiceAddress: dbPo.invoice_address || "", invoiceGstin: dbPo.invoice_gstin || "",
+          invoiceState: dbPo.invoice_state || "", invoiceStateCode: dbPo.invoice_state_code || "", invoiceCin: dbPo.invoice_cin || "",
+          consigneeName: dbPo.consignee_name || "", consigneeAddress: dbPo.consignee_address || "", consigneeGstin: dbPo.consignee_gstin || "",
+          consigneeState: dbPo.consignee_state || "", consigneeStateCode: dbPo.consignee_state_code || "",
+          supplierName: dbPo.supplier_name || "", supplierAddress: dbPo.supplier_address || "", supplierMob: dbPo.supplier_mob || "",
+          supplierEmail: dbPo.supplier_email || "", dispatchedThrough: dbPo.dispatched_through || "", destination: dbPo.destination || "",
+          termsOfDelivery: dbPo.terms_of_delivery || "", signatoryCompany: dbPo.signatory_company || "", pan: dbPo.pan || ""
+        },
+        items: mappedItems,
+        tc: mappedTc
       };
-      setPoList((p) => [po, ...p]);
+    });
+    
+    mapped.sort((a, b) => {
+      const dbA = pos.find(p => p.id === a.id);
+      const dbB = pos.find(p => p.id === b.id);
+      return new Date(dbB.created_at) - new Date(dbA.created_at);
+    });
+    setPoList(mapped);
+  };
+
+  useEffect(() => {
+    fetchPOs();
+  }, []);
+
+  const handleSaveAndGenerate = async () => {
+    const poData = {
+      voucher_no: form.voucherNo, date: form.date, currency: form.currency,
+      ref_no: form.refNo, ref_date: form.refDate, other_ref: form.otherRef,
+      dispatched_through: form.dispatchedThrough, destination: form.destination, terms_of_delivery: form.termsOfDelivery,
+      invoice_name: form.invoiceName, invoice_gstin: form.invoiceGstin, invoice_address: form.invoiceAddress,
+      invoice_state: form.invoiceState, invoice_state_code: form.invoiceStateCode, invoice_cin: form.invoiceCin, pan: form.pan,
+      consignee_name: form.consigneeName, consignee_gstin: form.consigneeGstin, consignee_address: form.consigneeAddress,
+      consignee_state: form.consigneeState, consignee_state_code: form.consignee_state_code,
+      supplier_name: form.supplierName, supplier_address: form.supplierAddress, supplier_mob: form.supplierMob, supplier_email: form.supplierEmail,
+      signatory_company: form.signatoryCompany, grand_total: gt, status: "Active"
+    };
+
+    let poId = editingId;
+    if (poId) {
+      await supabase.from("purchase_orders").update(poData).eq("id", poId);
+      await supabase.from("po_items").delete().eq("po_id", poId);
+      await supabase.from("po_terms").delete().eq("po_id", poId);
+    } else {
+      const { data: newPo, error } = await supabase.from("purchase_orders").insert(poData).select().single();
+      if (error) { console.error("Error inserting PO:", error); return; }
+      poId = newPo.id;
     }
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const itemAmount = parseFloat(item.amount) || parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || 0) || 0;
+        const { data: insertedItem } = await supabase.from("po_items").insert({
+            po_id: poId, item_index: i + 1, description: item.description, hsn: item.hsn,
+            due_on: item.dueOn, quantity: item.quantity, unit_price: item.unitPrice, unit: item.unit, amount: itemAmount
+        }).select().single();
+        
+        if (insertedItem && item.subItems && item.subItems.length > 0) {
+            const subInserts = item.subItems.map((sub, j) => ({ item_id: insertedItem.id, sub_index: j + 1, description: sub }));
+            await supabase.from("po_sub_items").insert(subInserts);
+        }
+    }
+
+    if (tc && tc.length > 0) {
+        const termInserts = tc.map((t, i) => ({ po_id: poId, term_index: i + 1, content: t }));
+        await supabase.from("po_terms").insert(termInserts);
+    }
+
+    await fetchPOs();
+    setPreviewPO({ form, items, tc });
+    setEditingId(null);
     setShowPreview(true);
   };
 
@@ -853,7 +951,7 @@ export default function DashboardPage() {
               onCreatePurchaseOrder={() => setActiveTab("create")}
               onViewPO={(po) => { setPreviewPO(po); setShowPreview(true); }}
               onEditPO={handleEditPO}
-              onDeletePO={(id) => setPoList((p) => p.filter((x) => x.id !== id))}
+              onDeletePO={(id) => setDeleteId(id)}
               onEmailPO={(po) => sendEmail(po.form, po.items, po.total)}
               formatCurrency={(v) => "$" + Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
             />
@@ -922,6 +1020,23 @@ export default function DashboardPage() {
             </div>
           );
         })()}
+      {deleteId && (
+        <div className="modal-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="confirm-box">
+            <div className="confirm-ic">🗑️</div>
+            <div className="confirm-t">Delete Purchase Order?</div>
+            <div className="confirm-d">Are you sure? This action will permanently remove this purchase order from your database and cannot be undone.</div>
+            <div className="confirm-btns">
+              <button className="btn-cf btn-cf-can" onClick={() => setDeleteId(null)}>Cancel</button>
+              <button className="btn-cf btn-cf-del" onClick={async () => { 
+                await supabase.from("purchase_orders").delete().eq("id", deleteId);
+                await fetchPOs();
+                setDeleteId(null); 
+              }}>Delete Permanently</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
