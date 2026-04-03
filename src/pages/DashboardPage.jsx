@@ -901,10 +901,15 @@ export default function DashboardPage() {
     team: { title: "Team Members", sub: "Manage your team and their roles" },
   };
 
+  const totalsByCurrency = poList.reduce((acc, p) => {
+    const cur = p.currency || "USD";
+    acc[cur] = (acc[cur] || 0) + (p.total || 0);
+    return acc;
+  }, {});
+
   const dashboardMetrics = {
     totalOrders: poList.length,
-    totalAmount: poList.reduce((s, p) => s + p.total, 0),
-    pendingOrders: poList.filter((p) => p.status === "Pending" || p.status === "pending").length,
+    totalsByCurrency,
     completedOrders: poList.filter((p) => p.status === "Active" || p.status === "Completed").length,
   };
 
@@ -953,7 +958,7 @@ export default function DashboardPage() {
               onEditPO={handleEditPO}
               onDeletePO={(id) => setDeleteId(id)}
               onEmailPO={(po) => sendEmail(po.form, po.items, po.total)}
-              formatCurrency={(v) => "$" + Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+
             />
           )}
 

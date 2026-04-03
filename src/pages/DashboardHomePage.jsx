@@ -1,26 +1,27 @@
 import React from "react";
 
+const CURRENCY_SYMBOLS = { USD: "$", INR: "₹", EUR: "€", GBP: "£" };
+
 export default function DashboardHomePage({
-  metrics = { totalOrders: 0, totalAmount: 0, pendingOrders: 0, completedOrders: 0 },
+  metrics = { totalOrders: 0, totalsByCurrency: {}, completedOrders: 0 },
   recentOrders = [],
   onCreatePurchaseOrder,
   onViewPO,
   onEditPO,
   onDeletePO,
   onEmailPO,
-  formatCurrency,
 }) {
+  const { totalOrders, totalsByCurrency = {} } = metrics;
+  const currencyEntries = Object.entries(totalsByCurrency);
+
   const statCards = [
-    { title: "Total Purchase Orders", value: metrics.totalOrders, icon: "📋", bg: "#EFF6FF", trend: "All time", tc: "up" },
-    { title: "Total Amount", value: formatCurrency ? formatCurrency(metrics.totalAmount) : metrics.totalAmount, icon: "💰", bg: "#F0FDF4", trend: "Grand total", tc: "up" },
-    { title: "Pending Orders", value: metrics.pendingOrders, icon: "⏳", bg: "#FFFBEB", trend: "Awaiting action", tc: "warn" },
-    { title: "Completed Orders", value: metrics.completedOrders, icon: "✅", bg: "#F0FDFA", trend: "Fulfilled", tc: "up" },
+    { title: "Total Purchase Orders", value: totalOrders, icon: "📋", bg: "#EFF6FF", trend: "All time", tc: "up" },
   ];
 
   return (
     <div>
       {/* KPI Cards */}
-      <div className="dash-stats">
+      <div className="dash-stats" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
         {statCards.map((c) => (
           <div key={c.title} className="dash-stat">
             <div className="ds-icon" style={{ background: c.bg }}>{c.icon}</div>
@@ -28,6 +29,18 @@ export default function DashboardHomePage({
               <div className="ds-l">{c.title}</div>
               <div className="ds-n">{c.value}</div>
               <div className={`ds-t ${c.tc}`}>{c.trend}</div>
+            </div>
+          </div>
+        ))}
+        {currencyEntries.map(([cur, amt]) => (
+          <div key={cur} className="dash-stat">
+            <div className="ds-icon" style={{ background: "#F0FDF4", fontSize: ".85rem", fontWeight: 700, color: "#15803D" }}>{cur}</div>
+            <div className="ds-body">
+              <div className="ds-l">Total ({cur})</div>
+              <div className="ds-n" style={{ fontSize: "1.1rem" }}>
+                {CURRENCY_SYMBOLS[cur] || ""}{Number(amt).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              </div>
+              <div className="ds-t up">Grand total</div>
             </div>
           </div>
         ))}

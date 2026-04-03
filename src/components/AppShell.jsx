@@ -40,16 +40,6 @@ export default function AppShell({
           </button>
         ))}
 
-        <div className="sb-section" style={{ marginTop: ".5rem" }}>
-          Reports
-        </div>
-        <button className="sb-item" onClick={onExportFirstPO}>
-          <span className="sb-item-ic">📤</span> Export Excel
-        </button>
-        <button className="sb-item" onClick={onPreviewFirstPO}>
-          <span className="sb-item-ic">🖨</span> Export PDF
-        </button>
-
         <div className="sb-bottom">
           <div className="sb-user">
             <div className="sb-avatar">AU</div>
