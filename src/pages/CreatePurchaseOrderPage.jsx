@@ -144,6 +144,15 @@ export default function CreatePurchaseOrderPage({
           <div className="tc-item" key={i}>
             <div className="tc-num">{i + 1}</div>
             <textarea value={t} onChange={(e) => { const n = [...tc]; n[i] = e.target.value; setTc(n); }} rows={3} />
+            <button
+              type="button"
+              className="del-btn"
+              onClick={() => setTc(tc.filter((_, idx) => idx !== i))}
+              title={`Remove term ${i + 1}`}
+              aria-label={`Remove term ${i + 1}`}
+            >
+              X
+            </button>
           </div>
         ))}
         <button className="add-row-btn" onClick={() => setTc([...tc, ""])}>＋ Add Term</button>
