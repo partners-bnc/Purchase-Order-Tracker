@@ -4,7 +4,7 @@ import AppShell from "../components/AppShell";
 import DashboardHomePage from "./DashboardHomePage";
 import CreatePurchaseOrderPage from "./CreatePurchaseOrderPage";
 import ImportFromExcelPage from "./ImportFromExcelPage";
-import { supabase } from "../supabaseClient";
+import { ensureSupabaseSession, supabase } from "../supabaseClient";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 const ones = [
@@ -753,6 +753,7 @@ export default function DashboardPage() {
   const [previewPO, setPreviewPO] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [authError, setAuthError] = useState("");
 
   const sf = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const gt = items.reduce(
@@ -775,8 +776,21 @@ export default function DashboardPage() {
     );
 
   const fetchPOs = async () => {
+    try {
+      await ensureSupabaseSession();
+      setAuthError("");
+    } catch (error) {
+      console.error("Error establishing Supabase session:", error);
+      setAuthError(error.message || "Unable to connect to Supabase.");
+      return;
+    }
+
     const { data: pos, error } = await supabase.from("purchase_orders").select("*, po_items(*, po_sub_items(*)), po_terms(*)");
-    if (error) { console.error("Error fetching POs:", error); return; }
+    if (error) {
+      console.error("Error fetching POs:", error);
+      setAuthError(error.message || "Unable to load purchase orders.");
+      return;
+    }
     
     const mapped = pos.map(dbPo => {
       const mappedItems = dbPo.po_items.sort((a,b) => a.item_index - b.item_index).map(it => ({
@@ -831,6 +845,15 @@ export default function DashboardPage() {
   }, []);
 
   const handleSaveAndGenerate = async () => {
+    try {
+      await ensureSupabaseSession();
+      setAuthError("");
+    } catch (error) {
+      console.error("Error establishing Supabase session:", error);
+      setAuthError(error.message || "Unable to connect to Supabase.");
+      return;
+    }
+
     const poData = {
       voucher_no: form.voucherNo, date: form.date, currency: form.currency,
       ref_no: form.refNo, ref_date: form.refDate, other_ref: form.otherRef,
@@ -838,7 +861,7 @@ export default function DashboardPage() {
       invoice_name: form.invoiceName, invoice_gstin: form.invoiceGstin, invoice_address: form.invoiceAddress,
       invoice_state: form.invoiceState, invoice_state_code: form.invoiceStateCode, invoice_cin: form.invoiceCin, pan: form.pan,
       consignee_name: form.consigneeName, consignee_gstin: form.consigneeGstin, consignee_address: form.consigneeAddress,
-      consignee_state: form.consigneeState, consignee_state_code: form.consignee_state_code,
+      consignee_state: form.consigneeState, consignee_state_code: form.consigneeStateCode,
       supplier_name: form.supplierName, supplier_address: form.supplierAddress, supplier_mob: form.supplierMob, supplier_email: form.supplierEmail,
       signatory_company: form.signatoryCompany, grand_total: gt, status: "Active"
     };
@@ -850,7 +873,11 @@ export default function DashboardPage() {
       await supabase.from("po_terms").delete().eq("po_id", poId);
     } else {
       const { data: newPo, error } = await supabase.from("purchase_orders").insert(poData).select().single();
-      if (error) { console.error("Error inserting PO:", error); return; }
+      if (error) {
+        console.error("Error inserting PO:", error);
+        setAuthError(error.message || "Unable to create purchase order.");
+        return;
+      }
       poId = newPo.id;
     }
 
@@ -949,6 +976,12 @@ export default function DashboardPage() {
           topbarTitle={tabTitles[activeTab]?.title}
           topbarSub={tabTitles[activeTab]?.sub}
         >
+          {authError ? (
+            <div style={{ margin: "1rem 1.75rem 0", padding: ".9rem 1rem", borderRadius: "12px", background: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C", fontSize: ".9rem", lineHeight: 1.5 }}>
+              {authError}
+            </div>
+          ) : null}
+
           {activeTab === "dashboard" && (
             <DashboardHomePage
               metrics={dashboardMetrics}
@@ -1034,6 +1067,15 @@ export default function DashboardPage() {
             <div className="confirm-btns">
               <button className="btn-cf btn-cf-can" onClick={() => setDeleteId(null)}>Cancel</button>
               <button className="btn-cf btn-cf-del" onClick={async () => { 
+                try {
+                  await ensureSupabaseSession();
+                  setAuthError("");
+                } catch (error) {
+                  console.error("Error establishing Supabase session:", error);
+                  setAuthError(error.message || "Unable to connect to Supabase.");
+                  return;
+                }
+
                 await supabase.from("purchase_orders").delete().eq("id", deleteId);
                 await fetchPOs();
                 setDeleteId(null); 
