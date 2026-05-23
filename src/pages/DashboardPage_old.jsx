@@ -6,14 +6,7 @@ import CreatePurchaseOrderPage from "./CreatePurchaseOrderPage";
 import ImportFromExcelPage from "./ImportFromExcelPage";
 import { ensureSupabaseSession, supabase } from "../supabaseClient";
 
-// Donation Flow Pages
-import CreateReceiptPage from "./CreateReceiptPage";
-import ImportDonationsPage from "./ImportDonationsPage";
-import DonorsDirectoryPage from "./DonorsDirectoryPage";
-import OrganizationProfilePage from "./OrganizationProfilePage";
-import DonationDoc from "../components/DonationDoc";
-
-/* ─── helpers ─────────────────────────────────────────────────── */
+/* ΓöÇΓöÇΓöÇ helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 const ones = [
   "",
   "One",
@@ -73,9 +66,9 @@ const DEFAULT_TC = [
   "GST Extra as applicable",
   "Price - The price mentioned in the Purchase Order is firm and fixed till the delivery of entire material and is not subject to any price Escalation on any ground. Pricing and Make/Brand mentioned in this Purchase Order are inclusive of Packing. No incremental / incidental charges are in the scope of Medivation. only Transit, Freight and Insurance will be in Medivation Bio Pvt Ltd scope.",
   "Freight and Taxes will be in Medivation Bio Pvt Ltd scope and charged extra as applicable at the time of dispatch. FOB Shanghai will be in scope of JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD",
-  "Payment Terms on Supply-\n• 100% Advance payment",
+  "Payment Terms on Supply-\nΓÇó 100% Advance payment",
   "Replacement of Missing/Damaged Consignment: All consignments must be packed in a manner that will provide for efficient handling and prevent damage in transit. In the event of damage to any consignment or missing parts, Medivation shall inform JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD and JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD shall replace/make prompt arrangements for its manufacture and supply as to commission without any delay without any cost escalation",
-  "Delays in Delivery – Strict time bound delivery is the essence of this PO. JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD will be liable for delays in delivery other than causes beyond its control and without its fault or negligence.",
+  "Delays in Delivery ΓÇô Strict time bound delivery is the essence of this PO. JIANGYIN HONGMENG RUBBER PLASTIC PRODUCT CO., LTD will be liable for delays in delivery other than causes beyond its control and without its fault or negligence.",
 ];
 
 const emptyForm = () => ({
@@ -151,7 +144,7 @@ const defaultItems = () => [
   },
 ];
 
-/* ─── CSS ─────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇΓöÇ CSS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -163,7 +156,7 @@ const CSS = `
 }
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
 
-/* ─ DELETE MODAL ─ */
+/* ΓöÇ DELETE MODAL ΓöÇ */
 .confirm-box{background:#fff;width:90%;max-width:380px;border-radius:18px;padding:1.5rem;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);position:relative;animation:popIn 0.25s ease-out;}
 @keyframes popIn { from{transform:scale(0.9);opacity:0;} to{transform:scale(1);opacity:1;} }
 .confirm-ic{width:50px;height:50px;background:var(--red-l);color:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.15rem;}
@@ -176,7 +169,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .btn-cf-can{background:#F1F5F9;color:var(--muted);}
 .btn-cf-can:hover{background:#E2E8F0;color:var(--text);}
 
-/* ─ LANDING ─ */
+/* ΓöÇ LANDING ΓöÇ */
 .landing{height:100vh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
 .l-nav{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:50;}
 .l-nav-brand{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:1rem;color:var(--teal-d);}
@@ -202,7 +195,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .l-feat-t{font-weight:600;font-size:.9rem;margin-bottom:.3rem;}
 .l-feat-d{font-size:.8rem;color:var(--muted);line-height:1.55;}
 
-/* ─ APP SHELL (sidebar) ─ */
+/* ΓöÇ APP SHELL (sidebar) ΓöÇ */
 .app-shell{display:flex;min-height:100vh;background:var(--bg);}
 .sidebar{width:280px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:40;}
 .sb-brand{height:36px;display:flex;align-items:center;gap:.75rem;padding:0 1.25rem;border-bottom:1px solid var(--border);}
@@ -228,7 +221,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .topbar-right{display:flex;align-items:center;gap:.75rem;}
 .main-content{padding:1.75rem;flex:1;}
 
-/* ─ DASHBOARD ─ */
+/* ΓöÇ DASHBOARD ΓöÇ */
 .dash-stats,.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.75rem;}
 .dash-stat,.stat-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;gap:.9rem;}
 .ds-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
@@ -265,7 +258,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .empty-t{font-weight:600;font-size:1rem;margin-bottom:.5rem;color:var(--text);}
 .empty-d{font-size:.85rem;line-height:1.6;margin-bottom:1.5rem;}
 
-/* ─ FORM ─ */
+/* ΓöÇ FORM ΓöÇ */
 .form-wrap{max-width:1200px;}
 .sec-card{background:#fff;border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;border:1px solid var(--border);box-shadow:var(--shadow);}
 .sec-hd{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);}
@@ -305,7 +298,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .copy-btn{background:var(--teal-l);color:var(--teal-d);border:1.5px solid var(--teal-m);padding:.4rem .85rem;border-radius:7px;cursor:pointer;font-size:.75rem;font-weight:600;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:.35rem;transition:all .15s;}
 .copy-btn:hover{background:var(--teal-m);}
 
-/* ─ IMPORT PAGE ─ */
+/* ΓöÇ IMPORT PAGE ΓöÇ */
 .import-wrap{max-width:700px;}
 .import-zone{border:2px dashed var(--border);border-radius:14px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:all .18s;background:#fff;}
 .import-zone:hover,.import-zone.drag{border-color:var(--teal);background:var(--teal-l);}
@@ -317,7 +310,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .import-step{display:flex;gap:.65rem;margin-bottom:.6rem;align-items:flex-start;font-size:.82rem;color:var(--muted);}
 .import-step-n{min-width:22px;height:22px;background:var(--teal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;}
 
-/* ─ TEAM PAGE ─ */
+/* ΓöÇ TEAM PAGE ΓöÇ */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;}
 .team-card{background:#fff;border-radius:14px;padding:1.25rem;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:.9rem;}
 .team-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0;}
@@ -325,7 +318,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .team-role{font-size:.75rem;color:var(--muted);margin-top:.15rem;}
 .team-badge{font-size:.65rem;padding:.15rem .5rem;border-radius:10px;font-weight:600;margin-top:.4rem;display:inline-block;}
 
-/* ─ PREVIEW MODAL ─ */
+/* ΓöÇ PREVIEW MODAL ΓöÇ */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;overflow-y:auto;padding:1.5rem 1rem;}
 .modal-inner{max-width:920px;margin:0 auto;}
 .modal-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;}
@@ -339,7 +332,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .mbtn-email{background:#60A5FA;color:#fff;}
 .mbtn-email:hover{background:#3B82F6;}
 
-/* ─ PO DOCUMENT (print-accurate) ─ */
+/* ΓöÇ PO DOCUMENT (print-accurate) ΓöÇ */
 .po-doc{background:#fff;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;line-height:1.4;padding:18px 22px;}
 .po-doc *{box-sizing:border-box;}
 .po-title{text-align:center;font-size:15px;font-weight:bold;margin-bottom:10px;letter-spacing:1px;}
@@ -356,68 +349,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 @media print{.modal-toolbar,.modal-bg{display:none!important;} .po-doc{padding:0;}}
 `;
 
-/* ─── PRINT UTIL (opens print dialog for PDF) ─────────────────── */
+/* ΓöÇΓöÇΓöÇ PRINT UTIL (opens print dialog for PDF) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function printElement(elId) {
   const el = document.getElementById(elId);
   if (!el) return;
-
-  const isDonation = el.classList.contains("donation-print-doc");
-
-  const donationCSS = `
-    *{box-sizing:border-box;}
-    html,body{
-      margin:0;padding:0;
-      background:#fff;
-      font-family:'Outfit','Inter',Arial,sans-serif;
-      -webkit-print-color-adjust:exact;
-      print-color-adjust:exact;
-    }
-    .print-container{
-      width:100%;
-      margin:0 auto;
-    }
-    /* Full-page: stretch donation doc to fill the entire A4 sheet */
-    .donation-print-doc{
-      width:100%;
-      max-width:100%;
-      display:flex;
-      flex-direction:column;
-      page-break-inside:avoid;
-      break-inside:avoid;
-    }
-    .donation-print-doc > div:last-child{
-      page-break-before:avoid;
-      break-before:avoid;
-    }
-    @page{size:A4 portrait; margin:10mm 12mm;}
-    @media print{
-      html,body{height:100%;}
-    }
-  `;
-
-  const poCSS = `
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;padding:10mm;}
-    .print-container{width:190mm;margin:0 auto;}
-    table{border-collapse:collapse;width:100%;}
-    td,th{border:1px solid #000;padding:5px 7px;vertical-align:top;font-size:10.5px;}
-    .po-title{text-align:center;font-size:15px;font-weight:bold;margin-bottom:10px;letter-spacing:1px;}
-    .po-lbl{font-size:9px;color:#555;margin-bottom:2px;}
-    .po-bold{font-weight:600;}
-    .po-center{text-align:center;}
-    .po-right{text-align:right;}
-    .po-amt{font-weight:600;text-align:center;}
-    th{background:#f5f5f5;font-weight:bold;font-size:9.5px;text-align:center;}
-    @page{size:A4;margin:0;}
-    @page :first{margin-top:0;}
-    html,body{-webkit-print-color-adjust:exact;}
-  `;
-
   const w = window.open("", "_blank", "width=900,height=700");
   w.document.write(`<!DOCTYPE html><html><head><title>&#8203;</title>
-    ${isDonation ? `<link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">` : ""}
-    <style>${isDonation ? donationCSS : poCSS}</style>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;padding:10mm;}
+      .print-container { width: 190mm; margin: 0 auto; }
+      table{border-collapse:collapse;width:100%;}
+      td,th{border:1px solid #000;padding:5px 7px;vertical-align:top;font-size:10.5px;}
+      .po-title{text-align:center;font-size:15px;font-weight:bold;margin-bottom:10px;letter-spacing:1px;}
+      .po-lbl{font-size:9px;color:#555;margin-bottom:2px;}
+      .po-bold{font-weight:600;}
+      .po-center{text-align:center;}
+      .po-right{text-align:right;}
+      .po-amt{font-weight:600;text-align:center;}
+      th{background:#f5f5f5;font-weight:bold;font-size:9.5px;text-align:center;}
+      @page{size:A4; margin:0;}
+      @page :first{ margin-top:0; }
+      html,body{-webkit-print-color-adjust:exact;}
+    </style>
   </head><body><div class="print-container">${el.innerHTML}</div></body></html>`);
   w.document.close();
   w.focus();
@@ -426,7 +380,7 @@ function printElement(elId) {
   }, 500);
 }
 
-/* ─── EXPORT CSV ─────────────────────────────────────────────── */
+/* ΓöÇΓöÇΓöÇ EXPORT CSV ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function exportCSV(form, items, tc) {
   const gt = items.reduce(
     (s, it) => s + (parseFloat(it.amount) || parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0)),
@@ -496,9 +450,9 @@ function exportCSV(form, items, tc) {
   URL.revokeObjectURL(url);
 }
 
-/* ─── EMAIL ─────────────────────────────────────────────────── */
+/* ΓöÇΓöÇΓöÇ EMAIL ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function sendEmail(form, items, gt) {
-  const sub = `Purchase Order ${form.voucherNo} – ${form.supplierName}`;
+  const sub = `Purchase Order ${form.voucherNo} ΓÇô ${form.supplierName}`;
   const b = [
     `Dear ${form.supplierName},`,
     ``,
@@ -528,9 +482,9 @@ function sendEmail(form, items, gt) {
   window.location.href = `mailto:?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(b)}`;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
    PO DOCUMENT COMPONENT
-═══════════════════════════════════════════════════════════════ */
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 function PODoc({ form, items, tc, id = "po-document" }) {
   const gt = items.reduce(
     (s, it) => s + (parseFloat(it.amount) || parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0)),
@@ -569,7 +523,7 @@ function PODoc({ form, items, tc, id = "po-document" }) {
               <div className="po-bold">{form.date}</div>
               <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #000", margin: "6px -7px 0", padding: "6px 7px 0" }}>
                 <div className="po-lbl">Other References</div>
-                <div>{form.otherRef || "—"}</div>
+                <div>{form.otherRef || "ΓÇö"}</div>
               </div>
             </td>
           </tr>
@@ -638,7 +592,7 @@ function PODoc({ form, items, tc, id = "po-document" }) {
               <div className="po-bold">{form.supplierName}</div>
               <div style={{ whiteSpace: "pre-line" }}>{form.supplierAddress}</div>
               <div>Mob : - {form.supplierMob}</div>
-              <div>Email : – {form.supplierEmail}</div>
+              <div>Email : ΓÇô {form.supplierEmail}</div>
             </td>
           </tr>
         </tbody>
@@ -785,9 +739,9 @@ function TeamMembersPage() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
    MAIN PAGE
-═══════════════════════════════════════════════════════════════ */
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 export default function DashboardPage() {
   const [screen, setScreen] = useState("landing");
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -800,132 +754,6 @@ export default function DashboardPage() {
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [authError, setAuthError] = useState("");
-
-  const [workspace, setWorkspace] = useState("po"); // "po" or "donation"
-
-  // Donation State
-  const [receiptList, setReceiptList] = useState(() => {
-    const saved = localStorage.getItem("ssf_donation_receipts");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [editingReceipt, setEditingReceipt] = useState(null);
-  const [showReceiptPreview, setShowReceiptPreview] = useState(false);
-  const [previewReceipt, setPreviewReceipt] = useState(null);
-  const [deleteReceiptId, setDeleteReceiptId] = useState(null);
-
-  // Fetch receipts from Supabase, fallback to localStorage
-  const fetchReceipts = async () => {
-    try {
-      const { data: recs, error } = await supabase.from("donation_receipts").select("*");
-      if (error) {
-        throw error;
-      }
-      if (recs) {
-        const sorted = [...recs].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
-        setReceiptList(sorted);
-        localStorage.setItem("ssf_donation_receipts", JSON.stringify(sorted));
-      }
-    } catch (e) {
-      console.warn("Could not sync with Supabase donation_receipts table. Falling back to local storage.", e);
-      const saved = localStorage.getItem("ssf_donation_receipts");
-      if (saved) {
-        setReceiptList(JSON.parse(saved));
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchReceipts();
-  }, []);
-
-  const handleSaveAndGenerateReceipt = async (receiptData) => {
-    let finalReceiptList = [...receiptList];
-    try {
-      const dbPayload = {
-        receipt_no: receiptData.receiptNo,
-        date: receiptData.date,
-        tax_year: receiptData.taxYear,
-        donor_name: receiptData.donorName,
-        donor_pan: receiptData.donorPan,
-        donor_address: receiptData.donorAddress,
-        donor_email: receiptData.donorEmail,
-        donor_phone: receiptData.donorPhone,
-        amount: receiptData.amount,
-        amount_in_words: receiptData.amountInWords,
-        towards: receiptData.towards,
-        status: "Active",
-      };
-
-      if (editingReceipt) {
-        const { error } = await supabase.from("donation_receipts").update(dbPayload).eq("id", editingReceipt.id);
-        if (error) throw error;
-        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? { ...receiptData, id: editingReceipt.id } : r);
-      } else {
-        const { data: inserted, error } = await supabase.from("donation_receipts").insert(dbPayload).select().single();
-        if (error) throw error;
-        finalReceiptList = [ { ...receiptData, id: inserted.id }, ...receiptList ];
-      }
-    } catch (e) {
-      console.warn("Supabase insert/update failed or table missing. Operating in offline/localStorage mode.", e);
-      const offlineId = editingReceipt ? editingReceipt.id : "offline-" + Date.now();
-      const offlineItem = { ...receiptData, id: offlineId };
-      if (editingReceipt) {
-        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? offlineItem : r);
-      } else {
-        finalReceiptList = [offlineItem, ...receiptList];
-      }
-    }
-
-    setReceiptList(finalReceiptList);
-    localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
-
-    setPreviewReceipt(editingReceipt ? { ...receiptData, id: editingReceipt.id } : { ...receiptData, id: "offline-" + Date.now() });
-    setShowReceiptPreview(true);
-    setEditingReceipt(null);
-    setActiveTab("dashboard");
-  };
-
-  const handleEditReceipt = (rc) => {
-    setEditingReceipt(rc);
-    setActiveTab("create");
-  };
-
-  const handleDeleteReceipt = async (id) => {
-    let finalReceiptList = receiptList.filter(r => r.id !== id);
-    try {
-      await supabase.from("donation_receipts").delete().eq("id", id);
-    } catch (e) {
-      console.warn("Supabase delete failed.", e);
-    }
-    setReceiptList(finalReceiptList);
-    localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
-    setDeleteReceiptId(null);
-  };
-
-  const sendEmailReceipt = (rc) => {
-    const sub = `Section 80G Tax Exemption Receipt ${rc.receiptNo} – Sanjhi Sikhiya Foundation`;
-    const b = [
-      `Dear ${rc.donorName},`,
-      ``,
-      `Thank you very much for your generous support towards Sanjhi Sikhiya Foundation.`,
-      ``,
-      `Your transaction has been successfully processed and recorded. Below are your tax-exemption receipt details:`,
-      ``,
-      `Receipt Number  : ${rc.receiptNo}`,
-      `Date            : ${rc.date}`,
-      `PAN Card Number : ${rc.donorPan}`,
-      `Towards Purpose : ${rc.towards}`,
-      `Amount (INR)    : INR ${parseFloat(rc.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
-      `Words           : ${rc.amountInWords}`,
-      ``,
-      `The electronics exemption copy u/s 80G has been generated. You can download or view it within your workspace portal.`,
-      ``,
-      `Warm regards,`,
-      `Authorized Trustee,`,
-      `Sanjhi Sikhiya Foundation`,
-    ].join("\n");
-    window.location.href = `mailto:${rc.donorEmail || ""}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(b)}`;
-  };
 
   const sf = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const gt = items.reduce(
@@ -1100,46 +928,17 @@ export default function DashboardPage() {
     team: { title: "Team Members", sub: "Manage your team and their roles" },
   };
 
-  const getTabTitle = () => {
-    if (workspace === "po") {
-      const titles = {
-        dashboard: { title: "Dashboard Overview", sub: "All purchase orders at a glance" },
-        create: { title: "Create Purchase Order", sub: "Fill all sections then click Generate" },
-        import: { title: "Import from Excel / CSV", sub: "Upload your template to auto-fill the form" },
-        team: { title: "Team Members", sub: "Manage your team and their roles" },
-      };
-      return titles[activeTab] || { title: "", sub: "" };
-    } else {
-      const titles = {
-        dashboard: { title: "Dashboard Overview", sub: "All donation receipts at a glance" },
-        create: { title: "Generate Exemption Receipt", sub: "Complete details to create Section 80G PDF copy" },
-        import: { title: "Excel Bulk Import Module", sub: "Upload multi-row spreadsheet to register donations" },
-        donors: { title: "Donors Lifetime Directory", sub: "View unique contributors and their accumulated LTV" },
-      };
-      return titles[activeTab] || { title: "", sub: "" };
-    }
-  };
-
   const totalsByCurrency = poList.reduce((acc, p) => {
     const cur = p.currency || "USD";
     acc[cur] = (acc[cur] || 0) + (p.total || 0);
     return acc;
   }, {});
 
-  const donationTotals = {
-    INR: receiptList.reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0)
-  };
-
-  const dashboardMetrics = workspace === "po" ? {
+  const dashboardMetrics = {
     totalOrders: poList.length,
     totalsByCurrency,
     completedOrders: poList.filter((p) => p.status === "Active" || p.status === "Completed").length,
-  } : {
-    totalReceipts: receiptList.length,
-    totalsByCurrency: donationTotals,
   };
-
-  const currentTabInfo = getTabTitle();
 
   return (
     <>
@@ -1147,37 +946,35 @@ export default function DashboardPage() {
 
       {screen === "landing" ? (
         <LandingPage
-          onOpenPO={() => {
-            setWorkspace("po");
-            setScreen("app");
-            setActiveTab("dashboard");
-          }}
-          onOpenDonation={() => {
-            setWorkspace("donation");
+          onOpenDashboard={() => {
             setScreen("app");
             setActiveTab("dashboard");
           }}
           onCreatePO={() => {
-            setWorkspace("po");
             setScreen("app");
             setActiveTab("create");
           }}
         />
       ) : (
         <AppShell
-          workspace={workspace}
           activeTab={activeTab}
-          onTabChange={(tab) => {
-            setActiveTab(tab);
-            if (workspace === "donation" && tab === "create") {
-              setEditingReceipt(null);
+          onTabChange={setActiveTab}
+          poList={poList}
+          onExportFirstPO={() => {
+            if (poList.length > 0) exportCSV(poList[0].form, poList[0].items, poList[0].tc);
+            else alert("No POs yet. Create one first.");
+          }}
+          onPreviewFirstPO={() => {
+            if (poList.length > 0) {
+              setPreviewPO(poList[0]);
+              setShowPreview(true);
+            } else {
+              alert("No POs yet.");
             }
           }}
-          poList={poList}
-          receiptList={receiptList}
           onGoHome={() => setScreen("landing")}
-          topbarTitle={currentTabInfo.title}
-          topbarSub={currentTabInfo.sub}
+          topbarTitle={tabTitles[activeTab]?.title}
+          topbarSub={tabTitles[activeTab]?.sub}
         >
           {authError ? (
             <div style={{ margin: "1rem 1.75rem 0", padding: ".9rem 1rem", borderRadius: "12px", background: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C", fontSize: ".9rem", lineHeight: 1.5 }}>
@@ -1185,96 +982,46 @@ export default function DashboardPage() {
             </div>
           ) : null}
 
-          {/* PO WORKSPACE PAGES */}
-          {workspace === "po" && (
-            <>
-              {activeTab === "dashboard" && (
-                <DashboardHomePage
-                  workspace="po"
-                  metrics={dashboardMetrics}
-                  recentOrders={poList}
-                  onCreatePurchaseOrder={() => setActiveTab("create")}
-                  onViewPO={(po) => { setPreviewPO(po); setShowPreview(true); }}
-                  onEditPO={handleEditPO}
-                  onDeletePO={(id) => setDeleteId(id)}
-                  onEmailPO={(po) => sendEmail(po.form, po.items, po.total)}
-                />
-              )}
+          {activeTab === "dashboard" && (
+            <DashboardHomePage
+              metrics={dashboardMetrics}
+              recentOrders={poList}
+              onCreatePurchaseOrder={() => setActiveTab("create")}
+              onViewPO={(po) => { setPreviewPO(po); setShowPreview(true); }}
+              onEditPO={handleEditPO}
+              onDeletePO={(id) => setDeleteId(id)}
+              onEmailPO={(po) => sendEmail(po.form, po.items, po.total)}
 
-              {activeTab === "create" && (
-                <CreatePurchaseOrderPage
-                  form={form} items={items} tc={tc} gt={gt} amtWords={amtWords}
-                  setForm={setForm} setItems={setItems} setTc={setTc}
-                  updateItem={updateItem} resetForm={resetForm}
-                  handleSaveAndGenerate={handleSaveAndGenerate}
-                  editingId={editingId}
-                  sf={sf} UNITS={UNITS}
-                />
-              )}
-
-              {activeTab === "import" && (
-                <ImportFromExcelPage
-                  onImport={(parsedForm, parsedItems, parsedTc) => {
-                    setForm(f => ({ ...f, ...parsedForm }));
-                    if (parsedItems.length > 0) setItems(parsedItems);
-                    if (parsedTc.length > 0) setTc(parsedTc);
-                    setEditingId(null);
-                    setActiveTab("create");
-                  }}
-                />
-              )}
-
-              {activeTab === "team" && <TeamMembersPage />}
-            </>
+            />
           )}
 
-          {/* DONATION WORKSPACE PAGES */}
-          {workspace === "donation" && (
-            <>
-              {activeTab === "dashboard" && (
-                <DashboardHomePage
-                  workspace="donation"
-                  metrics={dashboardMetrics}
-                  recentOrders={receiptList}
-                  onCreatePurchaseOrder={() => {
-                    setEditingReceipt(null);
-                    setActiveTab("create");
-                  }}
-                  onViewPO={(rc) => { setPreviewReceipt(rc); setShowReceiptPreview(true); }}
-                  onEditPO={handleEditReceipt}
-                  onDeletePO={(id) => setDeleteReceiptId(id)}
-                  onEmailPO={sendEmailReceipt}
-                />
-              )}
-
-              {activeTab === "create" && (
-                <CreateReceiptPage
-                  onSave={handleSaveAndGenerateReceipt}
-                  onCancel={() => setActiveTab("dashboard")}
-                  editingReceipt={editingReceipt}
-                />
-              )}
-
-              {activeTab === "import" && (
-                <ImportDonationsPage
-                  onImport={(recs) => {
-                    const updatedList = [...recs, ...receiptList];
-                    setReceiptList(updatedList);
-                    localStorage.setItem("ssf_donation_receipts", JSON.stringify(updatedList));
-                    setActiveTab("dashboard");
-                  }}
-                />
-              )}
-
-              {activeTab === "donors" && (
-                <DonorsDirectoryPage receiptList={receiptList} />
-              )}
-            </>
+          {activeTab === "create" && (
+            <CreatePurchaseOrderPage
+              form={form} items={items} tc={tc} gt={gt} amtWords={amtWords}
+              setForm={setForm} setItems={setItems} setTc={setTc}
+              updateItem={updateItem} resetForm={resetForm}
+              handleSaveAndGenerate={handleSaveAndGenerate}
+              editingId={editingId}
+              sf={sf} UNITS={UNITS}
+            />
           )}
+
+          {activeTab === "import" && (
+            <ImportFromExcelPage
+              onImport={(parsedForm, parsedItems, parsedTc) => {
+                setForm(f => ({ ...f, ...parsedForm }));
+                if (parsedItems.length > 0) setItems(parsedItems);
+                if (parsedTc.length > 0) setTc(parsedTc);
+                setEditingId(null);
+                setActiveTab("create");
+              }}
+            />
+          )}
+
+          {activeTab === "team" && <TeamMembersPage />}
         </AppShell>
       )}
 
-      {/* PURCHASE ORDER PREVIEW MODAL */}
       {showPreview &&
         (() => {
           const po = previewPO || { form, items, tc };
@@ -1287,13 +1034,13 @@ export default function DashboardPage() {
             <div className="modal-bg">
               <div className="modal-inner">
                 <div className="modal-toolbar">
-                  <div className="modal-title">📋 Purchase Order Preview</div>
+                  <div className="modal-title">≡ƒôï Purchase Order Preview</div>
                   <div className="modal-btns">
                     <button className="mbtn mbtn-email" onClick={() => sendEmail(po.form, po.items, totalAmt)}>
-                      ✉ Share Email
+                      Γ£ë Share Email
                     </button>
                     <button className="mbtn mbtn-pdf" onClick={() => printElement(docId)}>
-                      🖨 Print / PDF
+                      ≡ƒû¿ Print / PDF
                     </button>
                     <button
                       className="mbtn mbtn-close"
@@ -1302,7 +1049,7 @@ export default function DashboardPage() {
                         setPreviewPO(null);
                       }}
                     >
-                      ✕ Close
+                      Γ£ò Close
                     </button>
                   </div>
                 </div>
@@ -1311,48 +1058,10 @@ export default function DashboardPage() {
             </div>
           );
         })()}
-
-      {/* DONATION RECEIPT PREVIEW MODAL */}
-      {showReceiptPreview &&
-        (() => {
-          const rc = previewReceipt;
-          const docId = "receipt-preview-doc";
-          return (
-            <div className="modal-bg">
-              <div className="modal-inner">
-                <div className="modal-toolbar">
-                  <div className="modal-title">🧾 Donation Exemption Receipt Preview</div>
-                  <div className="modal-btns">
-                    <button className="mbtn mbtn-email" onClick={() => sendEmailReceipt(rc)}>
-                      ✉ Share Email
-                    </button>
-                    <button className="mbtn mbtn-pdf" onClick={() => printElement(docId)}>
-                      🖨 Print / PDF
-                    </button>
-                    <button
-                      className="mbtn mbtn-close"
-                      onClick={() => {
-                        setShowReceiptPreview(false);
-                        setPreviewReceipt(null);
-                      }}
-                    >
-                      ✕ Close
-                    </button>
-                  </div>
-                </div>
-                <div style={{ padding: "20px", display: "flex", justifyContent: "center", background: "#f1f5f9", overflowY: "auto", maxHeight: "calc(100vh - 120px)" }}>
-                  <DonationDoc receipt={rc} id={docId} />
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-      {/* PO DELETE CONFIRMATION */}
       {deleteId && (
         <div className="modal-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div className="confirm-box">
-            <div className="confirm-ic">🗑️</div>
+            <div className="confirm-ic">≡ƒùæ∩╕Å</div>
             <div className="confirm-t">Delete Purchase Order?</div>
             <div className="confirm-d">Are you sure? This action will permanently remove this purchase order from your database and cannot be undone.</div>
             <div className="confirm-btns">
@@ -1371,21 +1080,6 @@ export default function DashboardPage() {
                 await fetchPOs();
                 setDeleteId(null); 
               }}>Delete Permanently</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DONATION DELETE CONFIRMATION */}
-      {deleteReceiptId && (
-        <div className="modal-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div className="confirm-box">
-            <div className="confirm-ic">🗑️</div>
-            <div className="confirm-t">Delete Donation Receipt?</div>
-            <div className="confirm-d">Are you sure? This action will permanently remove this donation record and tax deduction certificate from your database and cannot be undone.</div>
-            <div className="confirm-btns">
-              <button className="btn-cf btn-cf-can" onClick={() => setDeleteReceiptId(null)}>Cancel</button>
-              <button className="btn-cf btn-cf-del" onClick={() => handleDeleteReceipt(deleteReceiptId)}>Delete Permanently</button>
             </div>
           </div>
         </div>
