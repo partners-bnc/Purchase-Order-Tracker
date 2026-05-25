@@ -25,14 +25,25 @@ export default function CreateReceiptPage({
   const defaultCreds = [
     { key: "reg80g",   label: "80G Exemption No",     val: "80G/ABACS7907EF20211/DATED 30-05-2022",  from: "AY 2022-23", to: "AY 2026-27" },
     { key: "reg12a",   label: "12AA REG. No",         val: "12AA/ABACS7907EF20211/DATED 28-05-2021", from: "AY 2022-23", to: "AY 2026-27" },
-    { key: "trust",    label: "Trust Reg. No",        val: "______" },
+    { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
     { key: "pan",      label: "PAN No",               val: "ABACS7907E" },
     { key: "csr",      label: "CSR 1 Reg. No",        val: "CSR00015126" },
   ];
 
   const [creds, setCreds] = useState(() => {
     const saved = localStorage.getItem("ssf_credentials_grid");
-    const parsed = saved ? JSON.parse(saved) : defaultCreds;
+    let parsed = saved ? JSON.parse(saved) : defaultCreds;
+    // Migrate Trust Reg No to CIN
+    parsed = parsed.map(c => {
+      if (c.key === "trust") {
+        return {
+          ...c,
+          label: "CIN",
+          val: (c.val && c.val !== "______" && c.val !== "") ? c.val : "U80900PB2018NPL048338"
+        };
+      }
+      return c;
+    });
     // back-fill from / to for old flat val entries (rows 0 and 1)
     parsed.forEach((c, i) => {
       if (i < 2 && !c.from && !c.to && c.val) {
@@ -313,9 +324,9 @@ export default function CreateReceiptPage({
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.78rem", borderTop: "1px solid var(--color-border)", paddingTop: "0.75rem", color: "var(--color-text-sub)" }}>
             <div>📍 <b>HQ Address:</b> Sector 72 SAS Nagar, Mohali, Punjab</div>
-            <div>🏢 <b>CIN Number:</b> U85300PB2020NPL051411 (Permanently Fixed)</div>
-            <div>🏦 <b>HDFC Bank A/c:</b> 50200054321908 (Mohali Branch)</div>
-            <div>💳 <b>IFSC Code:</b> HDFC0000048</div>
+            <div>🏢 <b>CIN Number:</b> U80900PB2018NPL048338</div>
+            <div>🏦 <b>HDFC Bank A/c:</b> 50100274224722 (Jalandhar Branch)</div>
+            <div>💳 <b>IFSC Code:</b> HDFC0000340</div>
           </div>
         </div>
 

@@ -4,15 +4,32 @@ export default function OrganizationProfilePage() {
   const defaultCreds = [
     { key: "reg80g", label: "80G EXEMPTION No", val: "80G/AALTS4686BF20214/Dated 28/05/2021" },
     { key: "reg12a", label: "12AA REGN No", val: "12AA/AALTS4686BE20214/Dated" },
-    { key: "validity", label: "12AA & 80G validity", val: "From AY 2022-23 to AY 2026-27" },
-    { key: "trust", label: "TRUST REGN No", val: "32703/Dated 02/03/2012" },
+    { key: "validity", label: "12AA & 80G validity", val: "Valid from AY 2022-23 to AY 2026-27" },
+    { key: "trust", label: "CIN", val: "U80900PB2018NPL048338" },
     { key: "pan", label: "PAN No", val: "AALTS4686B" },
     { key: "csr", label: "CSR1 Registration No", val: "CSR0000261 dated 02/04/2021" }
   ];
 
   const [creds, setCreds] = useState(() => {
     const saved = localStorage.getItem("ssf_credentials_grid");
-    return saved ? JSON.parse(saved) : defaultCreds;
+    let parsed = saved ? JSON.parse(saved) : defaultCreds;
+    parsed = parsed.map(c => {
+      if (c.key === "trust") {
+        return {
+          ...c,
+          label: "CIN",
+          val: (c.val && c.val !== "______" && c.val !== "" && !c.val.includes("32703")) ? c.val : "U80900PB2018NPL048338"
+        };
+      }
+      if (c.key === "validity" && c.val) {
+        return {
+          ...c,
+          val: c.val.startsWith("From") ? c.val.replace("From", "Valid from") : c.val
+        };
+      }
+      return c;
+    });
+    return parsed;
   });
 
   const [notif, setNotif] = useState("");

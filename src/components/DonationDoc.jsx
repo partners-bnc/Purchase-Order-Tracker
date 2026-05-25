@@ -5,13 +5,23 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
   /* ── credentials ── */
   const savedCreds = localStorage.getItem("ssf_credentials_grid");
-  const creds = savedCreds ? JSON.parse(savedCreds) : [
+  let creds = savedCreds ? JSON.parse(savedCreds) : [
     { key: "reg80g",   label: "80G Exemption No",     val: "80G/ABACS7907EF20211/DATED 30-05-2022" },
     { key: "reg12a",   label: "12AA REG. No",         val: "12AA/ABACS7907EF20211/DATED 28-05-2021" },
-    { key: "trust",    label: "Trust Reg. No",        val: "" },
+    { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
     { key: "pan",      label: "PAN No",               val: "ABACS7907E" },
     { key: "csr",      label: "CSR 1 Reg. No",        val: "CSR00015126" }
   ];
+  creds = creds.map(c => {
+    if (c.key === "trust") {
+      return {
+        ...c,
+        label: "CIN",
+        val: (c.val && c.val !== "______" && c.val !== "") ? c.val : "U80900PB2018NPL048338"
+      };
+    }
+    return c;
+  });
   const getCredVal = (key, def = "") => (creds.find(c => c.key === key) || { val: def }).val;
 
   /* ── date formatter: YYYY-MM-DD → DD/MM/YYYY ── */
@@ -68,7 +78,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         {getCredVal("reg80g", "80G/ABACS7907EF20211/DATED 30-05-2022")}
         <br />
         <span style={{ color: "#64748b", fontSize: "0.6rem" }}>
-          From {receipt.r80g_from || "AY 2022-23"} to {receipt.r80g_to || "AY 2026-27"}
+          Valid from {receipt.r80g_from || "AY 2022-23"} to {receipt.r80g_to || "AY 2026-27"}
         </span>
       </>
     ],
@@ -77,11 +87,11 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         {getCredVal("reg12a", "12AA/ABACS7907EF20211/DATED 28-05-2021")}
         <br />
         <span style={{ color: "#64748b", fontSize: "0.6rem" }}>
-          From {receipt.r12a_from || "AY 2022-23"} to {receipt.r12a_to || "AY 2026-27"}
+          Valid from {receipt.r12a_from || "AY 2022-23"} to {receipt.r12a_to || "AY 2026-27"}
         </span>
       </>
     ],
-    ["Trust Reg. No", getCredVal("trust", "______")],
+    ["CIN", getCredVal("trust", "U80900PB2018NPL048338")],
     ["PAN No", getCredVal("pan", "ABACS7907E")],
     ["CSR 1 Reg. No", getCredVal("csr", "CSR00015126")],
   ];
@@ -122,8 +132,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           </h1>
             <div style={{ fontSize: "0.80rem", color: "#4b5563", marginTop: "4px", lineHeight: "1.45", fontWeight: "500" }}>
             E-37, Aadh Towers, Sector 72, Phase 8, SAS Nagar, Punjab - 160071<br />
-            <b>CIN:</b> U80900PB2018NPL048338&nbsp;&nbsp;|&nbsp;&nbsp;
-            <b>E-Mail:</b> team@sanjhisikhiya.org
+            <b>E-Mail:</b> team@sanjhisikhiya.org&nbsp;&nbsp;|&nbsp;&nbsp;<b>Phone:</b> +91 81467 40988
             </div>
         </div>
       </div>
@@ -195,21 +204,17 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
             <span style={{ fontWeight: "700" }}>{dTowards}</span>
           </Row>
 
-          <Row label="Electronic mode :">
+          <Row label="Mode of Payment :">
             {dMode}
           </Row>
 
           {dNotes && (
-            <Row label="Note :">
+            <Row label="Bank Transaction Reference :">
               <span style={{ fontSize: "0.72rem", fontFamily: "monospace", background: "#f8fafc", padding: "3px 8px", borderRadius: "5px", border: "1px solid #cbd5e1", display: "inline-block", color: "#475569" }}>
                 {dNotes}
               </span>
             </Row>
           )}
-
-          <Row label="Eligible for deduction under :" borderTop>
-            <span style={{ fontWeight: "800", color: "#0f766e", fontSize: "0.80rem" }}>Donation received is eligible for deduction under Section 133 of the Income-tax Act, 2025.</span>
-          </Row>
 
         </div>
       </div>
@@ -249,27 +254,33 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
         </div>
 
-        {/* Notes — full-width below table + bank card, two-column table-style layout */}
+        {/* Terms & Conditions — full-width below table + bank card, two-column table-style layout */}
         <div style={{ borderTop: "1px solid #cbd5e1", marginTop: "2px", paddingTop: "6px" }}>
-          <span style={{ fontSize: "0.72rem", fontWeight: "700", color: "#374151", letterSpacing: "0.3px" }}>Notes:</span>
+          <span style={{ fontSize: "0.72rem", fontWeight: "700", color: "#374151", letterSpacing: "0.3px" }}>Terms & Conditions :</span>
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "3px", fontSize: "0.64rem" }}>
             <tbody>
               <tr>
-                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>1.</td>
+                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>1).</td>
                 <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", lineHeight: "1.5" }}>
-                  This Receipt is exempt from levy of Stamp Duty vide Exemption (b) of Article 53 in Schedule 1 of 'The Indian Stamp Act, 1899'.
+                  Form 10BE shall be issued upon filing of Form 10BD with the Income Tax Department.
                 </td>
               </tr>
               <tr>
-                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>2.</td>
+                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>2).</td>
                 <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", lineHeight: "1.5" }}>
-                  Form 10BE will be issued after filing Form 10BD.
+                  Donation received is eligible for 100% deduction under Section 133 of the Income-tax Act, 2025 (previously known as Section 80G of the Income-tax Act, 1961).
                 </td>
               </tr>
               <tr>
-                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>3.</td>
+                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>3).</td>
                 <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", lineHeight: "1.5" }}>
-                  Donation received is eligible for 100% deduction under section 133 of Income tax Act, 2025.
+                  This receipt shall be valid subject to realization of the donated funds.
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>4).</td>
+                <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", lineHeight: "1.5" }}>
+                  This receipt is exempt from Stamp Duty under Article 53(b) of Schedule I of the Indian Stamp Act, 1899.
                 </td>
               </tr>
             </tbody>
@@ -295,12 +306,11 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         fontSize: "0.64rem",
         color: "#64748b",
         fontWeight: "600",
-        textTransform: "uppercase",
         letterSpacing: "0.5px",
         pageBreakBefore: "avoid",
         breakBefore: "avoid",
       }}>
-        Note: This is a computer generated receipt
+        This is a computer-generated receipt and does not require a physical signature. Thank you for your generous contribution and continued support
       </div>
 
     </div>
