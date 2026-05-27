@@ -804,6 +804,57 @@ export default function DashboardPage() {
   const [workspace, setWorkspace] = useState("po"); // "po" or "donation"
 
   // Donation State
+  const mapDbToReceipt = (dbRow) => ({
+    id: dbRow.id,
+    receiptNo: dbRow.receipt_no,
+    date: dbRow.date,
+    taxYear: dbRow.tax_year,
+    donorName: dbRow.donor_name,
+    donorPan: dbRow.donor_pan,
+    donorAddress: dbRow.donor_address,
+    donorEmail: dbRow.donor_email,
+    donorPhone: dbRow.donor_phone,
+    amount: dbRow.amount,
+    amountInWords: dbRow.amount_in_words,
+    towards: dbRow.towards,
+    modeOfPayment: dbRow.mode_of_payment,
+    notes: dbRow.notes,
+    reg80gVal: dbRow.reg_80g_val,
+    reg80gFrom: dbRow.reg_80g_from,
+    reg80gTo: dbRow.reg_80g_to,
+    reg12aVal: dbRow.reg_12a_val,
+    reg12aFrom: dbRow.reg_12a_from,
+    reg12aTo: dbRow.reg_12a_to,
+    cinVal: dbRow.cin_val,
+    panVal: dbRow.pan_val,
+    csrVal: dbRow.csr_val,
+  });
+
+  const mapReceiptToDb = (receipt) => ({
+    receipt_no: receipt.receiptNo,
+    date: receipt.date,
+    tax_year: receipt.taxYear,
+    donor_name: receipt.donorName,
+    donor_pan: receipt.donorPan,
+    donor_address: receipt.donorAddress,
+    donor_email: receipt.donorEmail,
+    donor_phone: receipt.donorPhone,
+    amount: parseFloat(receipt.amount) || 0,
+    amount_in_words: receipt.amountInWords,
+    towards: receipt.towards,
+    mode_of_payment: receipt.modeOfPayment,
+    notes: receipt.notes,
+    reg_80g_val: receipt.reg80gVal,
+    reg_80g_from: receipt.reg80gFrom,
+    reg_80g_to: receipt.reg80gTo,
+    reg_12a_val: receipt.reg12aVal,
+    reg_12a_from: receipt.reg12aFrom,
+    reg_12a_to: receipt.reg12aTo,
+    cin_val: receipt.cinVal,
+    pan_val: receipt.panVal,
+    csr_val: receipt.csrVal,
+  });
+
   const [receiptList, setReceiptList] = useState(() => {
     const saved = localStorage.getItem("ssf_donation_receipts");
     return saved ? JSON.parse(saved) : [];
@@ -816,12 +867,14 @@ export default function DashboardPage() {
   // Fetch receipts from Supabase, fallback to localStorage
   const fetchReceipts = async () => {
     try {
+      await ensureSupabaseSession();
       const { data: recs, error } = await supabase.from("donation_receipts").select("*");
       if (error) {
         throw error;
       }
       if (recs) {
-        const sorted = [...recs].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
+        const mapped = recs.map(mapDbToReceipt);
+        const sorted = mapped.sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
         setReceiptList(sorted);
         localStorage.setItem("ssf_donation_receipts", JSON.stringify(sorted));
       }
@@ -840,46 +893,40 @@ export default function DashboardPage() {
 
   const handleSaveAndGenerateReceipt = async (receiptData) => {
     let finalReceiptList = [...receiptList];
+    let savedReceipt = { ...receiptData };
     try {
-      const dbPayload = {
-        receipt_no: receiptData.receiptNo,
-        date: receiptData.date,
-        tax_year: receiptData.taxYear,
-        donor_name: receiptData.donorName,
-        donor_pan: receiptData.donorPan,
-        donor_address: receiptData.donorAddress,
-        donor_email: receiptData.donorEmail,
-        donor_phone: receiptData.donorPhone,
-        amount: receiptData.amount,
-        amount_in_words: receiptData.amountInWords,
-        towards: receiptData.towards,
-        status: "Active",
-      };
+      await ensureSupabaseSession();
+      const dbPayload = mapReceiptToDb(receiptData);
 
       if (editingReceipt) {
         const { error } = await supabase.from("donation_receipts").update(dbPayload).eq("id", editingReceipt.id);
         if (error) throw error;
-        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? { ...receiptData, id: editingReceipt.id } : r);
+        savedReceipt.id = editingReceipt.id;
+        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? savedReceipt : r);
+        alert("🎉 Receipt successfully updated!");
       } else {
         const { data: inserted, error } = await supabase.from("donation_receipts").insert(dbPayload).select().single();
         if (error) throw error;
-        finalReceiptList = [ { ...receiptData, id: inserted.id }, ...receiptList ];
+        savedReceipt.id = inserted.id;
+        finalReceiptList = [ savedReceipt, ...receiptList ];
+        alert("🎉 Receipt successfully saved and logged!");
       }
     } catch (e) {
       console.warn("Supabase insert/update failed or table missing. Operating in offline/localStorage mode.", e);
+      alert("⚠️ Saved to offline storage: Operating in local mode.");
       const offlineId = editingReceipt ? editingReceipt.id : "offline-" + Date.now();
-      const offlineItem = { ...receiptData, id: offlineId };
+      savedReceipt.id = offlineId;
       if (editingReceipt) {
-        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? offlineItem : r);
+        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? savedReceipt : r);
       } else {
-        finalReceiptList = [offlineItem, ...receiptList];
+        finalReceiptList = [savedReceipt, ...receiptList];
       }
     }
 
     setReceiptList(finalReceiptList);
     localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
 
-    setPreviewReceipt(editingReceipt ? { ...receiptData, id: editingReceipt.id } : { ...receiptData, id: "offline-" + Date.now() });
+    setPreviewReceipt(savedReceipt);
     setShowReceiptPreview(true);
     setEditingReceipt(null);
     setActiveTab("dashboard");
@@ -893,7 +940,9 @@ export default function DashboardPage() {
   const handleDeleteReceipt = async (id) => {
     let finalReceiptList = receiptList.filter(r => r.id !== id);
     try {
-      await supabase.from("donation_receipts").delete().eq("id", id);
+      await ensureSupabaseSession();
+      const { error } = await supabase.from("donation_receipts").delete().eq("id", id);
+      if (error) throw error;
     } catch (e) {
       console.warn("Supabase delete failed.", e);
     }
@@ -1257,10 +1306,22 @@ export default function DashboardPage() {
 
               {activeTab === "import" && (
                 <ImportDonationsPage
-                  onImport={(recs) => {
-                    const updatedList = [...recs, ...receiptList];
-                    setReceiptList(updatedList);
-                    localStorage.setItem("ssf_donation_receipts", JSON.stringify(updatedList));
+                  onImport={async (recs) => {
+                    let finalReceiptList = [...receiptList];
+                    try {
+                      await ensureSupabaseSession();
+                      const payloads = recs.map(mapReceiptToDb);
+                      const { data: insertedRows, error } = await supabase.from("donation_receipts").insert(payloads).select();
+                      if (error) throw error;
+                      const mappedInserted = insertedRows.map(mapDbToReceipt);
+                      finalReceiptList = [...mappedInserted, ...receiptList];
+                    } catch (e) {
+                      console.warn("Supabase bulk insert failed. Saving to offline state.", e);
+                      const offlineRecs = recs.map(r => ({ ...r, id: "offline-" + Math.random().toString(36).substr(2, 9) }));
+                      finalReceiptList = [...offlineRecs, ...receiptList];
+                    }
+                    setReceiptList(finalReceiptList);
+                    localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
                     setActiveTab("dashboard");
                   }}
                 />

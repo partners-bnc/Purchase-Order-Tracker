@@ -109,7 +109,9 @@ export default function DashboardHomePage({
                     </div>
                     <div className="po-card-voucher">{voucher} · {date}</div>
                   </div>
-                  <span className={`po-badge ${(status || "active").toLowerCase()}`}>{status}</span>
+                  {isPO && (
+                    <span className={`po-badge ${(status || "active").toLowerCase()}`}>{status}</span>
+                  )}
                 </div>
                 <div className="po-card-rows">
                   <span>{row1Label} <b>{row1Val}</b></span>

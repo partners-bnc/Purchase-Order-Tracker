@@ -18,28 +18,63 @@ export default function CreateReceiptPage({
     amount: "",
     towards: "Specific Grants",
     modeOfPayment: "Electronic modes including account payee cheque/draft",
-    othersNo: "IN42606950783694",
     notes: "RTGS CR-HSBC0110002-NET SOLUTIONS INDIA PRIVATE LIMITED-SANJHI SIKHIYA FOUNDATION-HSBCR22026032435586953"
    });
 
   const defaultCreds = [
-    { key: "reg80g",   label: "80G Exemption No",     val: "80G/ABACS7907EF20211/DATED 30-05-2022",  from: "AY 2022-23", to: "AY 2026-27" },
-    { key: "reg12a",   label: "12AA REG. No",         val: "12AA/ABACS7907EF20211/DATED 28-05-2021", from: "AY 2022-23", to: "AY 2026-27" },
+    { key: "reg80g",   label: "80G Registration No.", val: "ABACS7907E25CD02 Dated 20-01-2026",  from: "AY 2027-28", to: "AY 2031-32" },
+    { key: "reg12a",   label: "12AB Registration No.",        val: "ABACS7907E25CD01 Dated 20-01-2026", from: "AY 2027-28", to: "AY 2036-37" },
     { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
-    { key: "pan",      label: "PAN No",               val: "ABACS7907E" },
-    { key: "csr",      label: "CSR 1 Reg. No",        val: "CSR00015126" },
+    { key: "pan",      label: "PAN",                  val: "ABACS7907E" },
+    { key: "csr",      label: "CSR 1 Registration No.",       val: "CSR00015126" },
   ];
 
   const [creds, setCreds] = useState(() => {
     const saved = localStorage.getItem("ssf_credentials_grid");
     let parsed = saved ? JSON.parse(saved) : defaultCreds;
-    // Migrate Trust Reg No to CIN
+    
+    // Migrate labels and values dynamically
     parsed = parsed.map(c => {
+      if (c.key === "reg80g") {
+        return {
+          ...c,
+          label: "80G Registration No.",
+          val: (c.val === "80G/ABACS7907EF20211/DATED 30-05-2022" || c.val === "80G - ABACS7907E25CD02 Dated 20/01/2026" || c.val === "80G - ABACS7907E25CD02 Dated 20-01-2026" || !c.val) ? "ABACS7907E25CD02 Dated 20-01-2026" : c.val,
+          from: (c.from === "AY 2022-23" || !c.from) ? "AY 2027-28" : c.from,
+          to: (c.to === "AY 2026-27" || !c.to) ? "AY 2031-32" : c.to
+        };
+      }
+      if (c.key === "reg12a") {
+        return {
+          ...c,
+          label: "12AB Registration No.",
+          val: (c.val === "12AA/ABACS7907EF20211/DATED 28-05-2021" || c.val === "12AB - ABACS7907E25CD01 Dated 20/01/2026" || c.val === "12AB - ABACS7907E25CD01 Dated 20-01-2026" || !c.val) ? "ABACS7907E25CD01 Dated 20-01-2026" : c.val,
+          from: (c.from === "AY 2022-23" || !c.from) ? "AY 2027-28" : c.from,
+          to: (c.to === "AY 2026-27" || !c.to) ? "AY 2036-37" : c.to
+        };
+      }
       if (c.key === "trust") {
+        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
         return {
           ...c,
           label: "CIN",
-          val: (c.val && c.val !== "______" && c.val !== "") ? c.val : "U80900PB2018NPL048338"
+          val: (cleaned && cleaned !== "______" && cleaned !== "") ? cleaned : "U80900PB2018NPL048338"
+        };
+      }
+      if (c.key === "pan") {
+        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
+        return {
+          ...c,
+          label: "PAN",
+          val: (cleaned && cleaned !== "") ? cleaned : "ABACS7907E"
+        };
+      }
+      if (c.key === "csr") {
+        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
+        return {
+          ...c,
+          label: "CSR 1 Registration No.",
+          val: (cleaned && cleaned !== "") ? cleaned : "CSR00015126"
         };
       }
       return c;
@@ -56,7 +91,11 @@ export default function CreateReceiptPage({
 
   const handleCredValueChange = (index, field, value) => {
     const copy = [...creds];
-    copy[index] = { ...copy[index], [field]: value };
+    let finalVal = value;
+    if (field === "val" && (copy[index].key === "pan" || copy[index].key === "trust" || copy[index].key === "csr")) {
+      finalVal = value.replace(/\s+/g, "");
+    }
+    copy[index] = { ...copy[index], [field]: finalVal };
     setCreds(copy);
     localStorage.setItem("ssf_credentials_grid", JSON.stringify(copy));
   };
@@ -75,7 +114,6 @@ export default function CreateReceiptPage({
         amount: editingReceipt.amount || "",
         towards: editingReceipt.towards || "Specific Grants",
         modeOfPayment: editingReceipt.modeOfPayment || "Electronic modes including account payee cheque/draft",
-        othersNo: editingReceipt.othersNo || "",
         notes: editingReceipt.notes || ""
       });
     } else {
@@ -97,16 +135,26 @@ export default function CreateReceiptPage({
     }
     
     const numericAmount = parseFloat(form.amount) || 0;
-    const cred80g  = creds.find(c => c.key === "reg80g")  || {};
-    const cred12aa = creds.find(c => c.key === "reg12a")  || {};
+
+    const reg80g = creds.find(c => c.key === "reg80g") || {};
+    const reg12a = creds.find(c => c.key === "reg12a") || {};
+    const trust = creds.find(c => c.key === "trust") || {};
+    const pan = creds.find(c => c.key === "pan") || {};
+    const csr = creds.find(c => c.key === "csr") || {};
+
     const finalReceipt = {
       ...form,
       amount: numericAmount,
       amountInWords: amtWordsIndian(numericAmount),
-      r80g_from:  cred80g.from  || "AY 2022-23",
-      r80g_to:    cred80g.to    || "AY 2026-27",
-      r12a_from:  cred12aa.from || "AY 2022-23",
-      r12a_to:    cred12aa.to   || "AY 2026-27",
+      reg80gVal: reg80g.val || "",
+      reg80gFrom: reg80g.from || "",
+      reg80gTo: reg80g.to || "",
+      reg12aVal: reg12a.val || "",
+      reg12aFrom: reg12a.from || "",
+      reg12aTo: reg12a.to || "",
+      cinVal: trust.val || "",
+      panVal: pan.val || "",
+      csrVal: csr.val || "",
     };
     
     onSave(finalReceipt);
@@ -126,7 +174,7 @@ export default function CreateReceiptPage({
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
             <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Receipt Number</label>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Receipt No</label>
               <input
                 type="text"
                 placeholder="e.g. SSF/REC/2026/012"
@@ -146,7 +194,7 @@ export default function CreateReceiptPage({
               />
             </div>
             <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Date of Receipt</label>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Dated</label>
               <input
                 type="date"
                 value={form.date}
@@ -165,7 +213,7 @@ export default function CreateReceiptPage({
           
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Donor Full Name</label>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Received with thanks from</label>
               <input
                 type="text"
                 placeholder="e.g. Genpact India Private Limited"
@@ -177,7 +225,7 @@ export default function CreateReceiptPage({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
               <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Donor PAN Number</label>
+                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>PAN</label>
                 <input
                   type="text"
                   placeholder="e.g. AABCE4461B"
@@ -188,7 +236,7 @@ export default function CreateReceiptPage({
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Towards / Purpose</label>
+                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Towards</label>
                 <input
                   type="text"
                   value={form.towards}
@@ -200,7 +248,7 @@ export default function CreateReceiptPage({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
               <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Email Address</label>
+                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Email ID</label>
                 <input
                   type="email"
                   placeholder="donor@company.com"
@@ -210,7 +258,7 @@ export default function CreateReceiptPage({
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Phone Number</label>
+                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Contact No.</label>
                 <input
                   type="tel"
                   placeholder="+91 XXXXX XXXXX"
@@ -222,7 +270,7 @@ export default function CreateReceiptPage({
             </div>
 
             <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Donor Address</label>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Address</label>
               <textarea
                 placeholder="Full billing address..."
                 rows={2}
@@ -251,17 +299,7 @@ export default function CreateReceiptPage({
               />
             </div>
             <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Others / Reference No.</label>
-              <input
-                type="text"
-                placeholder="e.g. IN42606950783694"
-                value={form.othersNo}
-                onChange={(e) => setForm(f => ({ ...f, othersNo: e.target.value }))}
-                style={{ width: "100%", padding: "0.55rem 0.8rem", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "0.85rem" }}
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Payment Notes / RTGS Reference</label>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Bank Transaction Reference</label>
               <textarea
                 placeholder="e.g. RTGS CR-HSBC0110002..."
                 rows={2}
@@ -279,7 +317,7 @@ export default function CreateReceiptPage({
             💰 Donation Value
           </div>
           <div>
-            <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Amount (INR)</label>
+            <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>The sum of ₹</label>
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: "700", fontSize: "0.95rem" }}>₹</span>
               <input
