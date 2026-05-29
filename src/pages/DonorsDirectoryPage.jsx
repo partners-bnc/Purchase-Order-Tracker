@@ -85,7 +85,7 @@ export default function DonorsDirectoryPage({ receiptList = [] }) {
                       📍 {d.address}
                     </div>
                   </td>
-                  <td style={{ padding: "1rem", fontFamily: "monospace", fontWeight: "700" }}>{d.pan}</td>
+                  <td style={{ padding: "1rem", fontFamily: "'Courier New', Courier, monospace", fontWeight: "700" }}>{d.pan}</td>
                   <td style={{ padding: "1rem" }}>
                     <div>✉️ {d.email}</div>
                     {d.phone !== "N/A" && <div style={{ marginTop: "0.15rem" }}>📞 {d.phone}</div>}

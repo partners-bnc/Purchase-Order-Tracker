@@ -341,7 +341,7 @@ export default function CreateReceiptPage({
                         border: "1px solid #e2e8f0",
                         borderRadius: "8px",
                         fontSize: "0.78rem",
-                        fontFamily: "monospace",
+                        fontFamily: "'Courier New', Courier, monospace",
                         fontWeight: "600",
                         background: "#f1f5f9",
                         color: "#475569",
@@ -361,7 +361,7 @@ export default function CreateReceiptPage({
                             border: "1px solid #e2e8f0",
                             borderRadius: "8px",
                             fontSize: "0.74rem",
-                            fontFamily: "monospace",
+                            fontFamily: "'Courier New', Courier, monospace",
                             fontWeight: "600",
                             background: "#f1f5f9",
                             color: "#475569"
@@ -375,7 +375,7 @@ export default function CreateReceiptPage({
                             border: "1px solid #e2e8f0",
                             borderRadius: "8px",
                             fontSize: "0.74rem",
-                            fontFamily: "monospace",
+                            fontFamily: "'Courier New', Courier, monospace",
                             fontWeight: "600",
                             background: "#f1f5f9",
                             color: "#475569"

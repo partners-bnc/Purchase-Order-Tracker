@@ -91,7 +91,7 @@ export default function OrganizationProfilePage() {
                       type="text"
                       value={c.val}
                       onChange={(e) => handleValueChange(i, e.target.value)}
-                      style={{ width: "100%", padding: "0.5rem 0.75rem", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "0.85rem", fontFamily: "monospace", fontWeight: "600", background: "#f8fafc", color: "#0F766E" }}
+                      style={{ width: "100%", padding: "0.5rem 0.75rem", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "0.85rem", fontFamily: "'Courier New', Courier, monospace", fontWeight: "600", background: "#f8fafc", color: "#0F766E" }}
                     />
                   </td>
                 </tr>

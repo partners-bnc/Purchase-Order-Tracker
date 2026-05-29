@@ -234,7 +234,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #cbd5e1", paddingBottom: "4px", marginBottom: "6px" }}>
           <div>
             <span style={{ fontWeight: "700", color: "#374151", fontSize: "0.77rem" }}>Receipt No : </span>
-            <span style={{ fontFamily: "monospace", fontWeight: "800", fontSize: "0.84rem", color: "#DAA32E" }}>{rNo}</span>
+            <span style={{ fontFamily: "'Courier New', Courier, monospace", fontWeight: "800", fontSize: "0.84rem", color: "#DAA32E" }}>{rNo}</span>
           </div>
           <div>
             <span style={{ fontWeight: "700", color: "#374151", fontSize: "0.77rem" }}>Tax Year : </span>
@@ -259,7 +259,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           </Row>
 
           <Row label="PAN :">
-            <span style={{ fontFamily: "monospace", color: "#1e293b", fontSize: "0.86rem" }}>{dPan}</span>
+            {dPan}
           </Row>
 
           <Row label="Contact No. :">
@@ -296,7 +296,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
           {dNotes && (
             <Row label="Bank Transaction Reference :">
-              <span style={{ fontSize: "0.72rem", fontFamily: "monospace", background: "#f8fafc", padding: "3px 8px", borderRadius: "5px", border: "1px solid #cbd5e1", display: "inline-block", color: "#475569" }}>
+              <span style={{ fontSize: "0.72rem", fontFamily: "'Courier New', Courier, monospace", background: "#f8fafc", padding: "3px 8px", borderRadius: "5px", border: "1px solid #cbd5e1", display: "inline-block", color: "#475569", wordBreak: "break-all", fontWeight: "bold" }}>
                 {dNotes}
               </span>
             </Row>
@@ -402,7 +402,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
       {/* ══════ FOOTER ══════ */}
       <div style={{
         textAlign: "center",
-        borderTop: "1px solid #cbd5e1",
+        borderTop: "3px solid #DAA32E",
         paddingTop: "4px",
         marginTop: "6px",
         fontSize: "0.64rem",
