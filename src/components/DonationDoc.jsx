@@ -10,7 +10,8 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     { key: "reg12a",   label: "12AB Registration No.",        val: "ABACS7907E25CD01 Dated 20-01-2026" },
     { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
     { key: "pan",      label: "PAN",                  val: "ABACS7907E" },
-    { key: "csr",      label: "CSR 1 Registration No.",       val: "CSR00015126" }
+    { key: "csr",      label: "CSR 1",       val: "CSR00015126" },
+    { key: "darpan",   label: "DARPAN ID",            val: "PB/2020/0266135" }
   ];
   creds = creds.map(c => {
     if (c.key === "reg80g") {
@@ -51,8 +52,16 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
       const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
       return {
         ...c,
-        label: "CSR 1 Registration No.",
+        label: "CSR 1",
         val: (cleaned && cleaned !== "") ? cleaned : "CSR00015126"
+      };
+    }
+    if (c.key === "darpan") {
+      const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
+      return {
+        ...c,
+        label: "DARPAN ID",
+        val: (cleaned && cleaned !== "") ? cleaned : "PB/2020/0266135"
       };
     }
     return c;
@@ -63,6 +72,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     if (key === "trust" && receipt.cinVal) return receipt.cinVal;
     if (key === "pan" && receipt.panVal) return receipt.panVal;
     if (key === "csr" && receipt.csrVal) return receipt.csrVal;
+    if (key === "darpan" && receipt.darpanVal) return receipt.darpanVal;
     return (creds.find(c => c.key === key) || { val: def }).val;
   };
   const getCredField = (key, field, def = "") => {
@@ -122,7 +132,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
   /* ── credential rows for the PDF table ── */
   const credRows = [
-    ["80G Registration No.",
+    ["Clause (ii) of 2nd proviso to Sec.80G(5)",
       <>
         {getCredVal("reg80g", "ABACS7907E25CD02 Dated 20-01-2026")}
         <br />
@@ -131,7 +141,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         </span>
       </>
     ],
-    ["12AB Registration No.",
+    ["12AB(1)(b)",
       <>
         {getCredVal("reg12a", "ABACS7907E25CD01 Dated 20-01-2026")}
         <br />
@@ -142,7 +152,8 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     ],
     ["CIN", getCredVal("trust", "U80900PB2018NPL048338")],
     ["PAN", getCredVal("pan", "ABACS7907E")],
-    ["CSR 1 Registration No.", getCredVal("csr", "CSR00015126")],
+    ["CSR 1", getCredVal("csr", "CSR00015126")],
+    ["DARPAN ID", getCredVal("darpan", "PB/2020/0266135")],
   ];
 
   return (
@@ -179,9 +190,13 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
            }}>
              SANJHI SIKHIYA FOUNDATION
           </h1>
-             <div style={{ fontSize: "0.80rem", color: "#4b5563", marginTop: "4px", lineHeight: "1.45", fontWeight: "500" }}>
-             E-37, Aadh Towers, Sector 72, Phase 8, SAS Nagar, Punjab - 160071<br />
-             <b>E-Mail:</b> team@sanjhisikhiya.org&nbsp;&nbsp;|&nbsp;&nbsp;<b>Phone:</b> ‪+91 9873038364
+             <div style={{ color: "#4b5563", marginTop: "4px", lineHeight: "1.45", fontWeight: "500" }}>
+               <div style={{ fontSize: "0.72rem", whiteSpace: "nowrap" }}>
+                 E-37, Second Floor, Aadh Towers, sector 72, Phase 8, S.A.S.Nagar (Mohali), Rupnagar, Punjab, 160071
+               </div>
+               <div style={{ fontSize: "0.80rem", marginTop: "2px" }}>
+                 <b>E-Mail:</b> team@sanjhisikhiya.org&nbsp;&nbsp;|&nbsp;&nbsp;<b>Phone:</b> ‪+91 9873038364
+               </div>
              </div>
         </div>
       </div>
@@ -210,7 +225,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
             <span style={{ fontWeight: "800", color: "#DAA32E", fontSize: "0.77rem" }}>{rTaxYear}</span>
           </div>
           <div>
-            <span style={{ fontWeight: "700", color: "#374151", fontSize: "0.77rem" }}>Dated : </span>
+            <span style={{ fontWeight: "700", color: "#374151", fontSize: "0.77rem" }}>Date : </span>
             <span style={{ fontWeight: "800", color: "#1e293b", fontSize: "0.77rem" }}>{rDate}</span>
           </div>
         </div>
@@ -228,7 +243,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           </Row>
 
           <Row label="PAN :">
-            <span style={{ fontWeight: "800", fontFamily: "monospace", color: "#1e293b", fontSize: "0.86rem" }}>{dPan}</span>
+            <span style={{ fontFamily: "monospace", color: "#1e293b", fontSize: "0.86rem" }}>{dPan}</span>
           </Row>
 
           <Row label="Contact No. :">
@@ -236,7 +251,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           </Row>
 
           <Row label="Email ID :">
-            <span style={{ fontWeight: "700" }}>{receipt.donorEmail || "N/A"}</span>
+            <span>{receipt.donorEmail || "N/A"}</span>
           </Row>
 
           <Row label="The sum of ₹ :">
@@ -249,15 +264,19 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
             <span style={{ fontWeight: "800", color: "#DAA32E", fontStyle: "italic" }}>{dWords}</span>
           </Row>
 
-          <Row label="Towards :">
-            <span style={{ fontWeight: "700" }}>{dTowards}</span>
+          <Row label="Purpose :">
+            <span>{dTowards}</span>
           </Row>
 
           <Row label="Mode of Payment :">
             {dMode}
           </Row>
 
-
+          {receipt.transactionDate && (
+            <Row label="Bank Transaction Date :">
+              {formatDate(receipt.transactionDate)}
+            </Row>
+          )}
 
           {dNotes && (
             <Row label="Bank Transaction Reference :">
@@ -284,6 +303,12 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
           {/* Registration Details table */}
           <table style={{ width: "100%", borderCollapse: "collapse", border: "1.5px solid #94a3b8", fontSize: "0.66rem" }}>
+            <thead>
+              <tr style={{ background: "#e2e8f0" }}>
+                <th style={{ padding: "5px 6px", border: "1px solid #cbd5e1", borderBottom: "1.5px solid #94a3b8", fontWeight: "700", color: "#1e293b", textAlign: "left", fontSize: "0.68rem", width: "43%" }}>Statutory Particulars</th>
+                <th style={{ padding: "5px 6px", border: "1px solid #cbd5e1", borderBottom: "1.5px solid #94a3b8", fontWeight: "700", color: "#1e293b", textAlign: "left", fontSize: "0.68rem" }}>Registration Numbers</th>
+              </tr>
+            </thead>
             <tbody>
               {credRows.map(([label, val]) => (
                 <tr key={label}>
@@ -298,8 +323,8 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           <div style={{ fontSize: "0.72rem", color: "#334155", lineHeight: "1.6", background: "#f8fafc", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}>
             <b>Bank Name :</b> HDFC Bank Ltd.<br />
             <b>Account No. :</b> 50100274224722<br />
-            <b>Branch :</b> HDFC Bank, Jalandhar Main Branch,<br />
-            <span style={{ paddingLeft: "46px" }}>Model Town, Jalandhar - 144001, Punjab</span><br />
+            <b>Address :</b> 245 R, Rainbow Road, Model Town,<br />
+            <span style={{ paddingLeft: "53px" }}>Jalandhar, Punjab 144003</span><br />
             <b>IFSC Code :</b> HDFC0000340
           </div>
 
@@ -335,7 +360,22 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         {/* Signature — at the very bottom, left-aligned */}
         <div style={{ display: "flex", flexDirection: "column", paddingTop: "4px" }}>
           <div style={{ fontSize: "0.76rem", fontWeight: "800", color: "#DAA32E", marginBottom: "4px" }}>For Sanjhi Sikhiya Foundation</div>
-          <div style={{ height: "60px", width: "200px" }}></div>
+          <div style={{ height: "60px", width: "200px", position: "relative" }}>
+            <img 
+              src="stamp.png" 
+              alt="Sanjhi Sikhiya Foundation Stamp"
+              style={{
+                position: "absolute",
+                top: "-25px",
+                left: "10px",
+                height: "115px",
+                objectFit: "contain",
+                transform: "rotate(-3deg)",
+                mixBlendMode: "multiply",
+                pointerEvents: "none"
+              }}
+            />
+          </div>
           <div style={{ height: "2px", background: "#000000", width: "200px" }}></div>
           <div style={{ fontSize: "0.68rem", color: "#64748b", marginTop: "4px", fontWeight: "700" }}>Simranpreet Singh Oberoi</div>
           <div style={{ fontSize: "0.63rem", color: "#64748b", marginTop: "2px", fontWeight: "500" }}>Co-Founder & CEO</div>
@@ -356,7 +396,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         pageBreakBefore: "avoid",
         breakBefore: "avoid",
       }}>
-        This is a computer-generated receipt and does not require a physical signature. Thank you for your generous contribution.
+        This is a computer-generated receipt.Thank you for your generous contribution.
       </div>
 
     </div>

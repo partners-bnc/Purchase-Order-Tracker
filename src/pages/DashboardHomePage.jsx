@@ -116,6 +116,9 @@ export default function DashboardHomePage({
                 <div className="po-card-rows">
                   <span>{row1Label} <b>{row1Val}</b></span>
                   <span>{row2Label} <b>{row2Val}</b></span>
+                  {!isPO && item.transactionDate && (
+                    <span>Bank Tx Date: <b>{item.transactionDate}</b></span>
+                  )}
                   <span>Total <b>{totalVal}</b></span>
                 </div>
                 <div className="po-card-footer">

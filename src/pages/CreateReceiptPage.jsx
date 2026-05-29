@@ -18,87 +18,18 @@ export default function CreateReceiptPage({
     amount: "",
     towards: "Specific Grants",
     modeOfPayment: "Electronic modes including account payee cheque/draft",
+    transactionDate: "",
     notes: "RTGS CR-HSBC0110002-NET SOLUTIONS INDIA PRIVATE LIMITED-SANJHI SIKHIYA FOUNDATION-HSBCR22026032435586953"
    });
 
-  const defaultCreds = [
+  const creds = [
     { key: "reg80g",   label: "80G Registration No.", val: "ABACS7907E25CD02 Dated 20-01-2026",  from: "AY 2027-28", to: "AY 2031-32" },
     { key: "reg12a",   label: "12AB Registration No.",        val: "ABACS7907E25CD01 Dated 20-01-2026", from: "AY 2027-28", to: "AY 2036-37" },
     { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
     { key: "pan",      label: "PAN",                  val: "ABACS7907E" },
-    { key: "csr",      label: "CSR 1 Registration No.",       val: "CSR00015126" },
+    { key: "csr",      label: "CSR 1",       val: "CSR00015126" },
+    { key: "darpan",   label: "DARPAN ID",            val: "PB/2020/0266135" },
   ];
-
-  const [creds, setCreds] = useState(() => {
-    const saved = localStorage.getItem("ssf_credentials_grid");
-    let parsed = saved ? JSON.parse(saved) : defaultCreds;
-    
-    // Migrate labels and values dynamically
-    parsed = parsed.map(c => {
-      if (c.key === "reg80g") {
-        return {
-          ...c,
-          label: "80G Registration No.",
-          val: (c.val === "80G/ABACS7907EF20211/DATED 30-05-2022" || c.val === "80G - ABACS7907E25CD02 Dated 20/01/2026" || c.val === "80G - ABACS7907E25CD02 Dated 20-01-2026" || !c.val) ? "ABACS7907E25CD02 Dated 20-01-2026" : c.val,
-          from: (c.from === "AY 2022-23" || !c.from) ? "AY 2027-28" : c.from,
-          to: (c.to === "AY 2026-27" || !c.to) ? "AY 2031-32" : c.to
-        };
-      }
-      if (c.key === "reg12a") {
-        return {
-          ...c,
-          label: "12AB Registration No.",
-          val: (c.val === "12AA/ABACS7907EF20211/DATED 28-05-2021" || c.val === "12AB - ABACS7907E25CD01 Dated 20/01/2026" || c.val === "12AB - ABACS7907E25CD01 Dated 20-01-2026" || !c.val) ? "ABACS7907E25CD01 Dated 20-01-2026" : c.val,
-          from: (c.from === "AY 2022-23" || !c.from) ? "AY 2027-28" : c.from,
-          to: (c.to === "AY 2026-27" || !c.to) ? "AY 2036-37" : c.to
-        };
-      }
-      if (c.key === "trust") {
-        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
-        return {
-          ...c,
-          label: "CIN",
-          val: (cleaned && cleaned !== "______" && cleaned !== "") ? cleaned : "U80900PB2018NPL048338"
-        };
-      }
-      if (c.key === "pan") {
-        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
-        return {
-          ...c,
-          label: "PAN",
-          val: (cleaned && cleaned !== "") ? cleaned : "ABACS7907E"
-        };
-      }
-      if (c.key === "csr") {
-        const cleaned = c.val ? c.val.replace(/\s+/g, "") : "";
-        return {
-          ...c,
-          label: "CSR 1 Registration No.",
-          val: (cleaned && cleaned !== "") ? cleaned : "CSR00015126"
-        };
-      }
-      return c;
-    });
-    // back-fill from / to for old flat val entries (rows 0 and 1)
-    parsed.forEach((c, i) => {
-      if (i < 2 && !c.from && !c.to && c.val) {
-        const m = c.val.match(/From\s+(.+?)\s+to\s+(.+)/i);
-        if (m) { c.from = m[1].trim(); c.to = m[2].trim(); }
-      }
-    });
-    return parsed;
-  });
-
-  const handleCredValueChange = (index, field, value) => {
-    const copy = [...creds];
-    let finalVal = value;
-    if (field === "val" && (copy[index].key === "pan" || copy[index].key === "trust" || copy[index].key === "csr")) {
-      finalVal = value.replace(/\s+/g, "");
-    }
-    copy[index] = { ...copy[index], [field]: finalVal };
-    setCreds(copy);
-    localStorage.setItem("ssf_credentials_grid", JSON.stringify(copy));
-  };
 
   useEffect(() => {
     if (editingReceipt) {
@@ -114,6 +45,7 @@ export default function CreateReceiptPage({
         amount: editingReceipt.amount || "",
         towards: editingReceipt.towards || "Specific Grants",
         modeOfPayment: editingReceipt.modeOfPayment || "Electronic modes including account payee cheque/draft",
+        transactionDate: editingReceipt.transactionDate || "",
         notes: editingReceipt.notes || ""
       });
     } else {
@@ -141,6 +73,7 @@ export default function CreateReceiptPage({
     const trust = creds.find(c => c.key === "trust") || {};
     const pan = creds.find(c => c.key === "pan") || {};
     const csr = creds.find(c => c.key === "csr") || {};
+    const darpan = creds.find(c => c.key === "darpan") || {};
 
     const finalReceipt = {
       ...form,
@@ -155,6 +88,7 @@ export default function CreateReceiptPage({
       cinVal: trust.val || "",
       panVal: pan.val || "",
       csrVal: csr.val || "",
+      darpanVal: darpan.val || "",
     };
     
     onSave(finalReceipt);
@@ -299,6 +233,15 @@ export default function CreateReceiptPage({
               />
             </div>
             <div>
+              <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Bank Transaction Date</label>
+              <input
+                type="date"
+                value={form.transactionDate || ""}
+                onChange={(e) => setForm(f => ({ ...f, transactionDate: e.target.value }))}
+                style={{ width: "100%", padding: "0.55rem 0.8rem", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "0.85rem" }}
+              />
+            </div>
+            <div>
               <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "0.3rem" }}>Bank Transaction Reference</label>
               <textarea
                 placeholder="e.g. RTGS CR-HSBC0110002..."
@@ -363,7 +306,7 @@ export default function CreateReceiptPage({
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.78rem", borderTop: "1px solid var(--color-border)", paddingTop: "0.75rem", color: "var(--color-text-sub)" }}>
             <div>📍 <b>HQ Address:</b> Sector 72 SAS Nagar, Mohali, Punjab</div>
             <div>🏢 <b>CIN Number:</b> U80900PB2018NPL048338</div>
-            <div>🏦 <b>HDFC Bank A/c:</b> 50100274224722 (Jalandhar Branch)</div>
+            <div>🏦 <b>HDFC Bank A/c:</b> 50100274224722 (Model Town, Jalandhar)</div>
             <div>💳 <b>IFSC Code:</b> HDFC0000340</div>
           </div>
         </div>
@@ -392,31 +335,53 @@ export default function CreateReceiptPage({
                       {c.label}
                     </td>
                     <td style={{ padding: "0.6rem 0.8rem" }}>
-                      <input
-                        type="text"
-                        value={c.val || ""}
-                        onChange={(e) => handleCredValueChange(i, "val", e.target.value)}
-                        placeholder="Registration Details"
-                        style={{ width: "100%", padding: "0.4rem 0.6rem", border: "1px solid var(--color-border)", borderRadius: "6px", fontSize: "0.78rem", fontFamily: "monospace", fontWeight: "600", background: "#f8fafc", color: "#0F766E" }}
-                      />
+                      <div style={{
+                        width: "100%",
+                        padding: "0.45rem 0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        fontSize: "0.78rem",
+                        fontFamily: "monospace",
+                        fontWeight: "600",
+                        background: "#f1f5f9",
+                        color: "#475569",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}>
+                        <span>🔒</span>
+                        <span>{c.val}</span>
+                      </div>
                       {i < 2 && (
                         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.5rem" }}>
                           <span style={{ fontSize: "0.72rem", fontWeight: "600", color: "var(--muted)" }}>From</span>
-                          <input
-                            type="text"
-                            value={c.from || ""}
-                            onChange={(e) => handleCredValueChange(i, "from", e.target.value)}
-                            placeholder="e.g. AY 2022-23"
-                            style={{ width: "40%", padding: "0.3rem 0.5rem", border: "1px solid var(--color-border)", borderRadius: "6px", fontSize: "0.74rem", fontFamily: "monospace", fontWeight: "600", background: "#f8fafc", color: "#0F766E" }}
-                          />
+                          <div style={{
+                            width: "40%",
+                            padding: "0.35rem 0.6rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "8px",
+                            fontSize: "0.74rem",
+                            fontFamily: "monospace",
+                            fontWeight: "600",
+                            background: "#f1f5f9",
+                            color: "#475569"
+                          }}>
+                            {c.from}
+                          </div>
                           <span style={{ fontSize: "0.72rem", fontWeight: "600", color: "var(--muted)", marginLeft: "0.5rem" }}>To</span>
-                          <input
-                            type="text"
-                            value={c.to || ""}
-                            onChange={(e) => handleCredValueChange(i, "to", e.target.value)}
-                            placeholder="e.g. AY 2026-27"
-                            style={{ width: "40%", padding: "0.3rem 0.5rem", border: "1px solid var(--color-border)", borderRadius: "6px", fontSize: "0.74rem", fontFamily: "monospace", fontWeight: "600", background: "#f8fafc", color: "#0F766E" }}
-                          />
+                          <div style={{
+                            width: "40%",
+                            padding: "0.35rem 0.6rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "8px",
+                            fontSize: "0.74rem",
+                            fontFamily: "monospace",
+                            fontWeight: "600",
+                            background: "#f1f5f9",
+                            color: "#475569"
+                          }}>
+                            {c.to}
+                          </div>
                         </div>
                       )}
                     </td>

@@ -818,6 +818,7 @@ export default function DashboardPage() {
     amountInWords: dbRow.amount_in_words,
     towards: dbRow.towards,
     modeOfPayment: dbRow.mode_of_payment,
+    transactionDate: dbRow.transaction_date,
     notes: dbRow.notes,
     reg80gVal: dbRow.reg_80g_val,
     reg80gFrom: dbRow.reg_80g_from,
@@ -828,6 +829,7 @@ export default function DashboardPage() {
     cinVal: dbRow.cin_val,
     panVal: dbRow.pan_val,
     csrVal: dbRow.csr_val,
+    darpanVal: dbRow.darpan_val,
   });
 
   const mapReceiptToDb = (receipt) => ({
@@ -843,6 +845,7 @@ export default function DashboardPage() {
     amount_in_words: receipt.amountInWords,
     towards: receipt.towards,
     mode_of_payment: receipt.modeOfPayment,
+    transaction_date: receipt.transactionDate || null,
     notes: receipt.notes,
     reg_80g_val: receipt.reg80gVal,
     reg_80g_from: receipt.reg80gFrom,
@@ -853,6 +856,7 @@ export default function DashboardPage() {
     cin_val: receipt.cinVal,
     pan_val: receipt.panVal,
     csr_val: receipt.csrVal,
+    darpan_val: receipt.darpanVal || "",
   });
 
   const [receiptList, setReceiptList] = useState(() => {
@@ -864,26 +868,33 @@ export default function DashboardPage() {
   const [previewReceipt, setPreviewReceipt] = useState(null);
   const [deleteReceiptId, setDeleteReceiptId] = useState(null);
 
-  // Fetch receipts from Supabase, fallback to localStorage
+  // Fetch receipts from Google Sheets, fallback to localStorage
   const fetchReceipts = async () => {
-    try {
-      await ensureSupabaseSession();
-      const { data: recs, error } = await supabase.from("donation_receipts").select("*");
-      if (error) {
-        throw error;
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (googleScriptUrl) {
+      try {
+        const res = await fetch(`${googleScriptUrl}?action=read`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const mapped = data.map(r => ({
+            ...r,
+            id: r.receiptNo || "sheet-" + Math.random().toString(36).substr(2, 9)
+          }));
+          const sorted = mapped.sort((a, b) => new Date(b.date) - new Date(a.date));
+          setReceiptList(sorted);
+          localStorage.setItem("ssf_donation_receipts", JSON.stringify(sorted));
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to fetch receipts from Google Sheets:", e);
       }
-      if (recs) {
-        const mapped = recs.map(mapDbToReceipt);
-        const sorted = mapped.sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
-        setReceiptList(sorted);
-        localStorage.setItem("ssf_donation_receipts", JSON.stringify(sorted));
-      }
-    } catch (e) {
-      console.warn("Could not sync with Supabase donation_receipts table. Falling back to local storage.", e);
-      const saved = localStorage.getItem("ssf_donation_receipts");
-      if (saved) {
-        setReceiptList(JSON.parse(saved));
-      }
+    }
+
+    // Fallback if Google Script URL is not configured or fails
+    console.warn("Falling back to local storage for donation receipts.");
+    const saved = localStorage.getItem("ssf_donation_receipts");
+    if (saved) {
+      setReceiptList(JSON.parse(saved));
     }
   };
 
@@ -894,28 +905,51 @@ export default function DashboardPage() {
   const handleSaveAndGenerateReceipt = async (receiptData) => {
     let finalReceiptList = [...receiptList];
     let savedReceipt = { ...receiptData };
-    try {
-      await ensureSupabaseSession();
-      const dbPayload = mapReceiptToDb(receiptData);
+    
+    if (!savedReceipt.id) {
+      savedReceipt.id = savedReceipt.receiptNo || "sheet-" + Date.now();
+    }
 
-      if (editingReceipt) {
-        const { error } = await supabase.from("donation_receipts").update(dbPayload).eq("id", editingReceipt.id);
-        if (error) throw error;
-        savedReceipt.id = editingReceipt.id;
-        finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? savedReceipt : r);
-        alert("🎉 Receipt successfully updated!");
-      } else {
-        const { data: inserted, error } = await supabase.from("donation_receipts").insert(dbPayload).select().single();
-        if (error) throw error;
-        savedReceipt.id = inserted.id;
-        finalReceiptList = [ savedReceipt, ...receiptList ];
-        alert("🎉 Receipt successfully saved and logged!");
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (googleScriptUrl) {
+      try {
+        const action = editingReceipt ? "update" : "create";
+        const payload = {
+          action: action,
+          data: savedReceipt
+        };
+
+        const response = await fetch(googleScriptUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if (result && result.success) {
+          if (editingReceipt) {
+            finalReceiptList = receiptList.map(r => r.receiptNo === editingReceipt.receiptNo ? savedReceipt : r);
+            alert("🎉 Receipt successfully updated in Google Sheets!");
+          } else {
+            finalReceiptList = [savedReceipt, ...receiptList];
+            alert("🎉 Receipt successfully saved and logged to Google Sheets!");
+          }
+        } else {
+          throw new Error(result?.error || "Unknown error from Google Apps Script");
+        }
+      } catch (e) {
+        console.error("Google Sheets sync failed:", e);
+        alert("⚠️ Google Sheets sync failed! Saved to offline storage: Operating in local mode.");
+        if (editingReceipt) {
+          finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? savedReceipt : r);
+        } else {
+          finalReceiptList = [savedReceipt, ...receiptList];
+        }
       }
-    } catch (e) {
-      console.warn("Supabase insert/update failed or table missing. Operating in offline/localStorage mode.", e);
-      alert("⚠️ Saved to offline storage: Operating in local mode.");
-      const offlineId = editingReceipt ? editingReceipt.id : "offline-" + Date.now();
-      savedReceipt.id = offlineId;
+    } else {
+      alert("⚠️ Operating in offline/localStorage mode. VITE_GOOGLE_SCRIPT_URL is not configured.");
       if (editingReceipt) {
         finalReceiptList = receiptList.map(r => r.id === editingReceipt.id ? savedReceipt : r);
       } else {
@@ -938,14 +972,43 @@ export default function DashboardPage() {
   };
 
   const handleDeleteReceipt = async (id) => {
-    let finalReceiptList = receiptList.filter(r => r.id !== id);
-    try {
-      await ensureSupabaseSession();
-      const { error } = await supabase.from("donation_receipts").delete().eq("id", id);
-      if (error) throw error;
-    } catch (e) {
-      console.warn("Supabase delete failed.", e);
+    const receiptToDelete = receiptList.find(r => r.id === id || r.receiptNo === id);
+    if (!receiptToDelete) {
+      setDeleteReceiptId(null);
+      return;
     }
+
+    let finalReceiptList = receiptList.filter(r => r.id !== id && r.receiptNo !== receiptToDelete.receiptNo);
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+    if (googleScriptUrl) {
+      try {
+        const payload = {
+          action: "delete",
+          data: receiptToDelete
+        };
+
+        const response = await fetch(googleScriptUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result && result.success) {
+          alert("🗑️ Receipt successfully deleted from Google Sheets!");
+        } else {
+          throw new Error(result?.error || "Unknown error from Google Apps Script");
+        }
+      } catch (e) {
+        console.error("Google Sheets delete failed:", e);
+        alert("⚠️ Google Sheets deletion failed, but removed from local view.");
+      }
+    } else {
+      alert("🗑️ Removed from local view (Google Sheets not configured).");
+    }
+
     setReceiptList(finalReceiptList);
     localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
     setDeleteReceiptId(null);
@@ -1308,18 +1371,44 @@ export default function DashboardPage() {
                 <ImportDonationsPage
                   onImport={async (recs) => {
                     let finalReceiptList = [...receiptList];
-                    try {
-                      await ensureSupabaseSession();
-                      const payloads = recs.map(mapReceiptToDb);
-                      const { data: insertedRows, error } = await supabase.from("donation_receipts").insert(payloads).select();
-                      if (error) throw error;
-                      const mappedInserted = insertedRows.map(mapDbToReceipt);
-                      finalReceiptList = [...mappedInserted, ...receiptList];
-                    } catch (e) {
-                      console.warn("Supabase bulk insert failed. Saving to offline state.", e);
+                    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+                    
+                    if (googleScriptUrl) {
+                      try {
+                        const payload = {
+                          action: "bulkCreate",
+                          data: recs
+                        };
+                        const response = await fetch(googleScriptUrl, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "text/plain;charset=utf-8"
+                          },
+                          body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+                        if (result && result.success) {
+                          const withIds = recs.map(r => ({
+                            ...r,
+                            id: r.receiptNo || "sheet-" + Math.random().toString(36).substr(2, 9)
+                          }));
+                          finalReceiptList = [...withIds, ...receiptList];
+                          alert(`🎉 Bulk successfully imported ${recs.length} donation(s) into Google Sheets!`);
+                        } else {
+                          throw new Error(result?.error || "Bulk insert failed");
+                        }
+                      } catch (e) {
+                        console.error("Google Sheets bulk import failed:", e);
+                        alert("⚠️ Google Sheets bulk sync failed! Saved to offline storage.");
+                        const offlineRecs = recs.map(r => ({ ...r, id: "offline-" + Math.random().toString(36).substr(2, 9) }));
+                        finalReceiptList = [...offlineRecs, ...receiptList];
+                      }
+                    } else {
+                      alert("⚠️ Operating in offline/localStorage mode. VITE_GOOGLE_SCRIPT_URL is not configured.");
                       const offlineRecs = recs.map(r => ({ ...r, id: "offline-" + Math.random().toString(36).substr(2, 9) }));
                       finalReceiptList = [...offlineRecs, ...receiptList];
                     }
+                    
                     setReceiptList(finalReceiptList);
                     localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
                     setActiveTab("dashboard");
