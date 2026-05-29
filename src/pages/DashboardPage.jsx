@@ -905,7 +905,7 @@ export default function DashboardPage() {
   const handleSaveAndGenerateReceipt = async (receiptData) => {
     let finalReceiptList = [...receiptList];
     let savedReceipt = { ...receiptData };
-    
+
     if (!savedReceipt.id) {
       savedReceipt.id = savedReceipt.receiptNo || "sheet-" + Date.now();
     }
@@ -927,7 +927,7 @@ export default function DashboardPage() {
           body: JSON.stringify(payload)
         });
         const result = await response.json();
-        
+
         if (result && result.success) {
           if (editingReceipt) {
             finalReceiptList = receiptList.map(r => r.receiptNo === editingReceipt.receiptNo ? savedReceipt : r);
@@ -1015,6 +1015,18 @@ export default function DashboardPage() {
   };
 
   const sendEmailReceipt = (rc) => {
+    const displayAmt = (() => {
+      if (rc.amount === undefined || rc.amount === null) return "0.00";
+      const str = String(rc.amount).trim();
+      if (str === "") return "0.00";
+      const hasComma = str.includes(",");
+      const hasMultipleDots = (str.match(/\./g) || []).length > 1;
+      if (hasComma || hasMultipleDots) return str;
+      const parsed = parseFloat(str);
+      if (isNaN(parsed)) return str;
+      return parsed.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    })();
+
     const sub = `Section 80G Tax Exemption Receipt ${rc.receiptNo} – Sanjhi Sikhiya Foundation`;
     const b = [
       `Dear ${rc.donorName},`,
@@ -1027,7 +1039,7 @@ export default function DashboardPage() {
       `Date            : ${rc.date}`,
       `PAN Card Number : ${rc.donorPan}`,
       `Towards Purpose : ${rc.towards}`,
-      `Amount (INR)    : INR ${parseFloat(rc.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+      `Amount (INR)    : INR ${displayAmt}`,
       `Words           : ${rc.amountInWords}`,
       ``,
       `The electronics exemption copy u/s 80G has been generated. You can download or view it within your workspace portal.`,
@@ -1075,20 +1087,20 @@ export default function DashboardPage() {
       setAuthError(error.message || "Unable to load purchase orders.");
       return;
     }
-    
+
     const mapped = pos.map(dbPo => {
-      const mappedItems = dbPo.po_items.sort((a,b) => a.item_index - b.item_index).map(it => ({
-         id: it.id, 
-         description: it.description || "",
-         hsn: it.hsn || "", 
-         dueOn: it.due_on || "",
-         quantity: it.quantity || "",
-         unitPrice: it.unit_price || "",
-         unit: it.unit || "NOS",
-         amount: it.amount || "",
-         subItems: it.po_sub_items.sort((a,b) => a.sub_index - b.sub_index).map(sub => sub.description)
+      const mappedItems = dbPo.po_items.sort((a, b) => a.item_index - b.item_index).map(it => ({
+        id: it.id,
+        description: it.description || "",
+        hsn: it.hsn || "",
+        dueOn: it.due_on || "",
+        quantity: it.quantity || "",
+        unitPrice: it.unit_price || "",
+        unit: it.unit || "NOS",
+        amount: it.amount || "",
+        subItems: it.po_sub_items.sort((a, b) => a.sub_index - b.sub_index).map(sub => sub.description)
       }));
-      const mappedTc = dbPo.po_terms.sort((a,b) => a.term_index - b.term_index).map(t => t.content);
+      const mappedTc = dbPo.po_terms.sort((a, b) => a.term_index - b.term_index).map(t => t.content);
 
       return {
         id: dbPo.id,
@@ -1115,7 +1127,7 @@ export default function DashboardPage() {
         tc: mappedTc
       };
     });
-    
+
     mapped.sort((a, b) => {
       const dbA = pos.find(p => p.id === a.id);
       const dbB = pos.find(p => p.id === b.id);
@@ -1166,22 +1178,22 @@ export default function DashboardPage() {
     }
 
     for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const itemAmount = parseFloat(item.amount) || parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || 0) || 0;
-        const { data: insertedItem } = await supabase.from("po_items").insert({
-            po_id: poId, item_index: i + 1, description: item.description, hsn: item.hsn,
-            due_on: item.dueOn, quantity: item.quantity, unit_price: item.unitPrice, unit: item.unit, amount: itemAmount
-        }).select().single();
-        
-        if (insertedItem && item.subItems && item.subItems.length > 0) {
-            const subInserts = item.subItems.map((sub, j) => ({ item_id: insertedItem.id, sub_index: j + 1, description: sub }));
-            await supabase.from("po_sub_items").insert(subInserts);
-        }
+      const item = items[i];
+      const itemAmount = parseFloat(item.amount) || parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || 0) || 0;
+      const { data: insertedItem } = await supabase.from("po_items").insert({
+        po_id: poId, item_index: i + 1, description: item.description, hsn: item.hsn,
+        due_on: item.dueOn, quantity: item.quantity, unit_price: item.unitPrice, unit: item.unit, amount: itemAmount
+      }).select().single();
+
+      if (insertedItem && item.subItems && item.subItems.length > 0) {
+        const subInserts = item.subItems.map((sub, j) => ({ item_id: insertedItem.id, sub_index: j + 1, description: sub }));
+        await supabase.from("po_sub_items").insert(subInserts);
+      }
     }
 
     if (tc && tc.length > 0) {
-        const termInserts = tc.map((t, i) => ({ po_id: poId, term_index: i + 1, content: t }));
-        await supabase.from("po_terms").insert(termInserts);
+      const termInserts = tc.map((t, i) => ({ po_id: poId, term_index: i + 1, content: t }));
+      await supabase.from("po_terms").insert(termInserts);
     }
 
     await fetchPOs();
@@ -1239,7 +1251,7 @@ export default function DashboardPage() {
   }, {});
 
   const donationTotals = {
-    INR: receiptList.reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0)
+    INR: receiptList.reduce((acc, r) => acc + (parseFloat(String(r.amount || 0).replace(/,/g, '')) || 0), 0)
   };
 
   const dashboardMetrics = workspace === "po" ? {
@@ -1372,7 +1384,7 @@ export default function DashboardPage() {
                   onImport={async (recs) => {
                     let finalReceiptList = [...receiptList];
                     const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-                    
+
                     if (googleScriptUrl) {
                       try {
                         const payload = {
@@ -1408,7 +1420,7 @@ export default function DashboardPage() {
                       const offlineRecs = recs.map(r => ({ ...r, id: "offline-" + Math.random().toString(36).substr(2, 9) }));
                       finalReceiptList = [...offlineRecs, ...receiptList];
                     }
-                    
+
                     setReceiptList(finalReceiptList);
                     localStorage.setItem("ssf_donation_receipts", JSON.stringify(finalReceiptList));
                     setActiveTab("dashboard");
@@ -1507,7 +1519,7 @@ export default function DashboardPage() {
             <div className="confirm-d">Are you sure? This action will permanently remove this purchase order from your database and cannot be undone.</div>
             <div className="confirm-btns">
               <button className="btn-cf btn-cf-can" onClick={() => setDeleteId(null)}>Cancel</button>
-              <button className="btn-cf btn-cf-del" onClick={async () => { 
+              <button className="btn-cf btn-cf-del" onClick={async () => {
                 try {
                   await ensureSupabaseSession();
                   setAuthError("");
@@ -1519,7 +1531,7 @@ export default function DashboardPage() {
 
                 await supabase.from("purchase_orders").delete().eq("id", deleteId);
                 await fetchPOs();
-                setDeleteId(null); 
+                setDeleteId(null);
               }}>Delete Permanently</button>
             </div>
           </div>

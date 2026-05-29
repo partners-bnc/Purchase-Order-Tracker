@@ -6,12 +6,12 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
   /* ── credentials ── */
   const savedCreds = localStorage.getItem("ssf_credentials_grid");
   let creds = savedCreds ? JSON.parse(savedCreds) : [
-    { key: "reg80g",   label: "80G Registration No.", val: "ABACS7907E25CD02 Dated 20-01-2026" },
-    { key: "reg12a",   label: "12AB Registration No.",        val: "ABACS7907E25CD01 Dated 20-01-2026" },
-    { key: "trust",    label: "CIN",                  val: "U80900PB2018NPL048338" },
-    { key: "pan",      label: "PAN",                  val: "ABACS7907E" },
-    { key: "csr",      label: "CSR 1",       val: "CSR00015126" },
-    { key: "darpan",   label: "DARPAN ID",            val: "PB/2020/0266135" }
+    { key: "reg80g", label: "80G Registration No.", val: "ABACS7907E25CD02 Dated 20-01-2026" },
+    { key: "reg12a", label: "12AB Registration No.", val: "ABACS7907E25CD01 Dated 20-01-2026" },
+    { key: "trust", label: "CIN", val: "U80900PB2018NPL048338" },
+    { key: "pan", label: "PAN", val: "ABACS7907E" },
+    { key: "csr", label: "CSR 1", val: "CSR00015126" },
+    { key: "darpan", label: "DARPAN ID", val: "PB/2020/0266135" }
   ];
   creds = creds.map(c => {
     if (c.key === "reg80g") {
@@ -91,17 +91,33 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     return raw;
   };
 
-  const rNo      = receipt.receiptNo    || "SSF/DR/2026-27/001";
-  const rDate    = formatDate(receipt.date);
-  const rTaxYear = receipt.taxYear      || "2026-27";
-  const dName    = receipt.donorName    || "N/A";
+  const rNo = receipt.receiptNo || "SSF/DR/2026-27/001";
+  const rDate = formatDate(receipt.date);
+  const rTaxYear = receipt.taxYear || "2026-27";
+  const dName = receipt.donorName || "N/A";
   const dAddress = receipt.donorAddress || "N/A";
-  const dPan     = receipt.donorPan     || "N/A";
-  const dTowards = receipt.towards      || "Specific Grants";
-  const dAmount  = parseFloat(receipt.amount || 0);
-  const dWords   = receipt.amountInWords || "";
-  const dMode    = receipt.modeOfPayment || "Electronic modes including account payee cheque / draft";
-  const dNotes   = receipt.notes        || "";
+  const dPan = receipt.donorPan || "N/A";
+  const dTowards = receipt.towards || "Specific Grants";
+
+  // Robust formatting: If the value from Google Sheets is already a pre-formatted string (contains commas or multiple dots), display it exactly as-is.
+  // Otherwise, format it cleanly with 2 decimal points.
+  const displayAmount = (() => {
+    if (receipt.amount === undefined || receipt.amount === null) return "0.00";
+    const str = String(receipt.amount).trim();
+    if (str === "") return "0.00";
+    const hasComma = str.includes(",");
+    const hasMultipleDots = (str.match(/\./g) || []).length > 1;
+    if (hasComma || hasMultipleDots) {
+      return str;
+    }
+    const parsed = parseFloat(str);
+    if (isNaN(parsed)) return str;
+    return parsed.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+  })();
+
+  const dWords = receipt.amountInWords || "";
+  const dMode = receipt.modeOfPayment || "Electronic modes including account payee cheque / draft";
+  const dNotes = receipt.notes || "";
 
   /* ─── Row helper: label is fixed width (flexShrink:0), value wraps freely on its own side ─── */
   const LBL_W = "195px";
@@ -110,8 +126,8 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     <div style={{
       display: "flex",
       alignItems: "flex-start",
-      gap: "8px",
-      ...(borderTop ? { borderTop: "1px solid #cbd5e1", paddingTop: "7px", marginTop: "2px" } : {}),
+      gap: "6px",
+      ...(borderTop ? { borderTop: "1px solid #cbd5e1", paddingTop: "4px", marginTop: "1px" } : {}),
     }}>
       <span style={{
         fontWeight: "700",
@@ -120,11 +136,11 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         minWidth: LBL_W,
         flexShrink: 0,           /* ← key: label never shrinks, value wraps on its own side */
         fontSize: "0.82rem",
-        lineHeight: "1.5",
+        lineHeight: "1.35",
       }}>
         {label}
       </span>
-      <span style={{ color: "#1e293b", fontSize: "0.82rem", lineHeight: "1.5", flex: 1 }}>
+      <span style={{ color: "#1e293b", fontSize: "0.82rem", lineHeight: "1.35", flex: 1 }}>
         {children}
       </span>
     </div>
@@ -160,62 +176,62 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
     <div
       className="po-doc donation-print-doc"
       id={id}
-    style={{
-      fontFamily: "'Outfit', 'Inter', 'Segoe UI', sans-serif",
-      background: "#ffffff",
-      color: "#1e293b",
-      border: "1px solid #cbd5e1",
-      width: "100%",
-      maxWidth: "800px",
-      margin: "0 auto",
-      boxShadow: "none",
-      lineHeight: "1.5",
-      display: "flex",
-      flexDirection: "column",
-        padding: "14px 36px 14px",
-    }}
+      style={{
+        fontFamily: "'Outfit', 'Inter', 'Segoe UI', sans-serif",
+        background: "#ffffff",
+        color: "#1e293b",
+        border: "none",
+        width: "100%",
+        maxWidth: "800px",
+        margin: "0 auto",
+        boxShadow: "none",
+        lineHeight: "1.4",
+        display: "flex",
+        flexDirection: "column",
+        padding: "10px 30px 0px",
+      }}
     >
 
       {/* ══════ HEADER ══════ */}
-      <div style={{ display: "flex", gap: "20px", alignItems: "center", borderBottom: "3px solid #DAA32E", paddingBottom: "14px", marginBottom: "14px" }}>
+      <div style={{ display: "flex", gap: "20px", alignItems: "center", borderBottom: "3px solid #DAA32E", paddingBottom: "10px", marginBottom: "10px" }}>
         <div style={{ flexShrink: 0 }}>
           <img src="logo.png" alt="SSF Logo"
-             style={{ height: "90px", width: "auto", objectFit: "contain" }}
-             onError={e => { e.target.style.display = "none"; }} />
+            style={{ height: "90px", width: "auto", objectFit: "contain" }}
+            onError={e => { e.target.style.display = "none"; }} />
         </div>
         <div style={{ paddingLeft: "10px" }}>
           <h1 style={{
-             margin: 0, fontSize: "1.75rem", fontWeight: "500", color: "#DAA32E",
-             letterSpacing: "0.5px", lineHeight: 1.15, textTransform: "uppercase",
-           }}>
-             SANJHI SIKHIYA FOUNDATION
+            margin: 0, fontSize: "1.75rem", fontWeight: "500", color: "#DAA32E",
+            letterSpacing: "0.5px", lineHeight: 1.15, textTransform: "uppercase",
+          }}>
+            SANJHI SIKHIYA FOUNDATION
           </h1>
-             <div style={{ color: "#4b5563", marginTop: "4px", lineHeight: "1.45", fontWeight: "500" }}>
-               <div style={{ fontSize: "0.72rem", whiteSpace: "nowrap" }}>
-                 E-37, Second Floor, Aadh Towers, sector 72, Phase 8, S.A.S.Nagar (Mohali), Rupnagar, Punjab, 160071
-               </div>
-               <div style={{ fontSize: "0.80rem", marginTop: "2px" }}>
-                 <b>E-Mail:</b> team@sanjhisikhiya.org&nbsp;&nbsp;|&nbsp;&nbsp;<b>Phone:</b> ‪+91 9873038364
-               </div>
-             </div>
+          <div style={{ color: "#4b5563", marginTop: "4px", lineHeight: "1.45", fontWeight: "500" }}>
+            <div style={{ fontSize: "0.72rem", whiteSpace: "nowrap" }}>
+              E-37, Second Floor, Aadh Towers, sector 72, Phase 8, S.A.S.Nagar (Mohali), Rupnagar, Punjab, 160071
+            </div>
+            <div style={{ fontSize: "0.80rem", marginTop: "2px" }}>
+              <b>E-Mail:</b> team@sanjhisikhiya.org&nbsp;&nbsp;|&nbsp;&nbsp;<b>Phone:</b> ‪+91 9873038364
+            </div>
+          </div>
         </div>
       </div>
- 
+
       {/* ══════ TITLE ══════ */}
-      <div style={{ textAlign: "center", marginBottom: "14px" }}>
+      <div style={{ textAlign: "center", marginBottom: "10px" }}>
         <h2 style={{
-           margin: 0, fontSize: "1.45rem", fontWeight: "500", color: "#DAA32E",
-           textTransform: "uppercase", letterSpacing: "3px",
-         }}>
-           DONATION RECEIPT
+          margin: 0, fontSize: "1.45rem", fontWeight: "500", color: "#DAA32E",
+          textTransform: "uppercase", letterSpacing: "3px",
+        }}>
+          DONATION RECEIPT
         </h2>
       </div>
- 
+
       {/* ══════ DONOR DETAILS BLOCK ══════ */}
-      <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "8px", padding: "10px 16px", marginBottom: "12px" }}>
- 
+      <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "8px", padding: "6px 14px", marginBottom: "8px" }}>
+
         {/* Receipt No / Tax Year / Date */}
-        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #cbd5e1", paddingBottom: "6px", marginBottom: "8px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #cbd5e1", paddingBottom: "4px", marginBottom: "6px" }}>
           <div>
             <span style={{ fontWeight: "700", color: "#374151", fontSize: "0.77rem" }}>Receipt No : </span>
             <span style={{ fontFamily: "monospace", fontWeight: "800", fontSize: "0.84rem", color: "#DAA32E" }}>{rNo}</span>
@@ -229,10 +245,10 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
             <span style={{ fontWeight: "800", color: "#1e293b", fontSize: "0.77rem" }}>{rDate}</span>
           </div>
         </div>
- 
+
         {/* All detail rows */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
- 
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+
           <Row label="Received with thanks from :">
             <span style={{ fontWeight: "800", color: "#DAA32E", fontSize: "0.9rem" }}>{dName}</span>
           </Row>
@@ -256,7 +272,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
 
           <Row label="The sum of ₹ :">
             <span style={{ fontWeight: "900", color: "#DAA32E", fontSize: "1rem" }}>
-              {dAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              {displayAmount}
             </span>
           </Row>
 
@@ -290,16 +306,16 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
       </div>
 
       {/* ══════ BOTTOM SECTION — 2-col table row + full-width notes + signature below ══════ */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "10px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "6px" }}>
 
         {/* Headings — side by side */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "14px" }}>
-          <div style={{ fontSize: "0.79rem", fontWeight: "800", color: "#DAA32E", letterSpacing: "0.4px", paddingTop: "4px" }}>Registration Details</div>
-          <div style={{ fontSize: "0.79rem", fontWeight: "800", color: "#DAA32E", letterSpacing: "0.4px", paddingTop: "4px" }}>Bank Account Details</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "10px" }}>
+          <div style={{ fontSize: "0.79rem", fontWeight: "800", color: "#DAA32E", letterSpacing: "0.4px", paddingTop: "0px" }}>Registration Details</div>
+          <div style={{ fontSize: "0.79rem", fontWeight: "800", color: "#DAA32E", letterSpacing: "0.4px", paddingTop: "0px" }}>Bank Account Details</div>
         </div>
 
         {/* Content — table | bank card, side by side */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "14px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "10px" }}>
 
           {/* Registration Details table */}
           <table style={{ width: "100%", borderCollapse: "collapse", border: "1.5px solid #94a3b8", fontSize: "0.66rem" }}>
@@ -320,7 +336,7 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
           </table>
 
           {/* Bank Account Details */}
-          <div style={{ fontSize: "0.72rem", color: "#334155", lineHeight: "1.6", background: "#f8fafc", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }}>
+          <div style={{ fontSize: "0.72rem", color: "#334155", lineHeight: "1.4", background: "#f8fafc", padding: "4px 8px", borderRadius: "6px", border: "1px solid #cbd5e1" }}>
             <b>Bank Name :</b> HDFC Bank Ltd.<br />
             <b>Account No. :</b> 50100274224722<br />
             <b>Address :</b> 245 R, Rainbow Road, Model Town,<br />
@@ -331,9 +347,9 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         </div>
 
         {/* Terms & Conditions — full-width below table + bank card, two-column table-style layout */}
-        <div style={{ marginTop: "2px", paddingTop: "6px" }}>
+        <div style={{ marginTop: "0px", paddingTop: "2px" }}>
           <span style={{ fontSize: "0.72rem", fontWeight: "700", color: "#374151", letterSpacing: "0.3px" }}>Terms & Conditions :</span>
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "3px", fontSize: "0.64rem" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1px", fontSize: "0.64rem" }}>
             <tbody>
               <tr>
                 <td style={{ padding: "1px 4px", verticalAlign: "top", color: "#64748b", whiteSpace: "nowrap", fontWeight: "700", width: "22px" }}>1).</td>
@@ -358,15 +374,15 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
         </div>
 
         {/* Signature — at the very bottom, left-aligned */}
-        <div style={{ display: "flex", flexDirection: "column", paddingTop: "4px" }}>
+        <div style={{ display: "flex", flexDirection: "column", paddingTop: "2px" }}>
           <div style={{ fontSize: "0.76rem", fontWeight: "800", color: "#DAA32E", marginBottom: "4px" }}>For Sanjhi Sikhiya Foundation</div>
-          <div style={{ height: "60px", width: "200px", position: "relative" }}>
-            <img 
-              src="stamp.png" 
+          <div style={{ height: "65px", width: "200px", position: "relative", marginTop: "8px" }}>
+            <img
+              src="stamp.png"
               alt="Sanjhi Sikhiya Foundation Stamp"
               style={{
                 position: "absolute",
-                top: "-25px",
+                top: "-20px",
                 left: "10px",
                 height: "115px",
                 objectFit: "contain",
@@ -376,10 +392,10 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
               }}
             />
           </div>
-          <div style={{ height: "2px", background: "#000000", width: "200px" }}></div>
-          <div style={{ fontSize: "0.68rem", color: "#64748b", marginTop: "4px", fontWeight: "700" }}>Simranpreet Singh Oberoi</div>
-          <div style={{ fontSize: "0.63rem", color: "#64748b", marginTop: "2px", fontWeight: "500" }}>Co-Founder & CEO</div>
-          <div style={{ fontSize: "0.63rem", color: "#64748b", marginTop: "2px", fontWeight: "500" }}>Authorized Signatory</div>
+          <div style={{ height: "2px", background: "#000000", width: "200px", marginTop: "4px" }}></div>
+          <div style={{ fontSize: "0.68rem", color: "#64748b", marginTop: "8px", fontWeight: "700" }}>Simranpreet Singh Oberoi</div>
+          <div style={{ fontSize: "0.63rem", color: "#64748b", marginTop: "1px", fontWeight: "500" }}>Co-Founder & CEO</div>
+          <div style={{ fontSize: "0.63rem", color: "#64748b", marginTop: "1px", fontWeight: "500" }}>Authorized Signatory</div>
         </div>
 
       </div>
@@ -387,8 +403,8 @@ export default function DonationDoc({ receipt, id = "donation-document" }) {
       <div style={{
         textAlign: "center",
         borderTop: "1px solid #cbd5e1",
-        paddingTop: "7px",
-        marginTop: "14px",
+        paddingTop: "4px",
+        marginTop: "6px",
         fontSize: "0.64rem",
         color: "#64748b",
         fontWeight: "600",
