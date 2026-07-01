@@ -1,6 +1,6 @@
 import React from "react";
 
-const UNITS = ["NOS", "PCS", "KGS", "MTR", "LTR", "BOX", "BAG", "BTL", "CTN", "PKG", "SET", "GM"];
+const UNITS = ["NOS", "PCS", "KGS", "MTR", "LTR", "BOX", "BAG", "BTL", "CTN", "PKG", "SET", "GM","FEET"];
 
 export default function CreatePurchaseOrderPage({
   form, items, tc, gt, amtWords,
@@ -100,7 +100,26 @@ export default function CreatePurchaseOrderPage({
                       <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.dueOn} onChange={(e) => updateItem(it.id, "dueOn", e.target.value)} placeholder="30th May 2026" /></td>
                       <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.quantity} onChange={(e) => updateItem(it.id, "quantity", e.target.value)} placeholder="0" style={{ textAlign: "right" }} /></td>
                       <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><input value={it.unitPrice} onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)} placeholder="0.00" style={{ textAlign: "right" }} /></td>
-                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><select value={it.unit} onChange={(e) => updateItem(it.id, "unit", e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select></td>
+                      <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <select
+                            value={UNITS.includes(it.unit) ? it.unit : "OTHER"}
+                            onChange={(e) => updateItem(it.id, "unit", e.target.value === "OTHER" ? "" : e.target.value)}
+                          >
+                            {UNITS.map((u) => <option key={u}>{u}</option>)}
+                            <option value="OTHER">Other...</option>
+                          </select>
+                          {!UNITS.includes(it.unit) && (
+                            <input
+                              autoFocus
+                              value={it.unit}
+                              onChange={(e) => updateItem(it.id, "unit", e.target.value)}
+                              placeholder="Type unit"
+                              style={{ width: "100%" }}
+                            />
+                          )}
+                        </div>
+                      </td>
                       <td rowSpan={rowSpan} className="amt-cell" style={{ verticalAlign: "middle" }}>{(parseFloat(it.amount) || (parseFloat(it.quantity || 0) * parseFloat(it.unitPrice || 0)) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
                       <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}><button className="del-btn" onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>✕</button></td>
                     </tr>
