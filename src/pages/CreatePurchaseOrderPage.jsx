@@ -21,7 +21,7 @@ const CURRENCIES = [
 
 export default function CreatePurchaseOrderPage({
   form, items, tc, gt, amtWords,
-  setForm, setItems, setTc, updateItem, resetForm, handleSaveAndGenerate, editingId,
+  setForm, setItems, setTc, updateItem, resetForm, handleSaveAndGenerate, editingId, generating,
 }) {
   const sf = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -217,8 +217,8 @@ export default function CreatePurchaseOrderPage({
 
       <div className="form-action-bar">
         <button className="btn-cancel" onClick={resetForm}>Reset Form</button>
-        <button className="btn-gen" onClick={handleSaveAndGenerate}>
-          {editingId ? "💾 Save Changes" : "⚡ Generate Purchase Order"}
+        <button className="btn-gen" onClick={handleSaveAndGenerate} disabled={generating} style={{ opacity: generating ? 0.7 : 1, cursor: generating ? "not-allowed" : "pointer" }}>
+          {generating ? "⏳ Saving..." : editingId ? "💾 Save Changes" : "⚡ Generate Purchase Order"}
         </button>
       </div>
     </div>

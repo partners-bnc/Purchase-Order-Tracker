@@ -56,16 +56,27 @@ function numWords(n) {
   if (rem) r += chunk(rem);
   return r.trim();
 }
+const CURRENCY_WORDS = {
+  USD: ["Dollars", "Cents"],
+  CAD: ["Canadian Dollars", "Cents"],
+  AUD: ["Australian Dollars", "Cents"],
+  SGD: ["Singapore Dollars", "Cents"],
+  NZD: ["New Zealand Dollars", "Cents"],
+  EUR: ["Euros", "Cents"],
+  GBP: ["Pounds", "Pence"],
+  INR: ["Rupees", "Paise"],
+  ZAR: ["Rand", "Cents"],
+  CNY: ["Yuan", "Jiao"],
+  JPY: ["Yen", "Sen"],
+  SAR: ["Riyals", "Halalas"],
+  AED: ["Dirhams", "Fils"],
+  CHF: ["Swiss Francs", "Rappen"],
+};
 function amtWords(v, currency = "USD") {
   const n = parseFloat(v) || 0;
   const d = Math.floor(n);
   const c = Math.round((n - d) * 100);
-  let curr = "Dollars";
-  let frac = "Cents";
-  if (currency === "INR") { curr = "Rupees"; frac = "Paise"; }
-  else if (currency === "EUR") { curr = "Euros"; frac = "Cents"; }
-  else if (currency === "GBP") { curr = "Pounds"; frac = "Pence"; }
-
+  const [curr, frac] = CURRENCY_WORDS[currency] || [currency, "Cents"];
   return numWords(d) + " " + curr + (c > 0 ? " and " + numWords(c) + " " + frac : "") + " Only";
 }
 
@@ -1140,13 +1151,18 @@ export default function DashboardPage() {
     fetchPOs();
   }, []);
 
+  const [generating, setGenerating] = useState(false);
+
   const handleSaveAndGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
     try {
       await ensureSupabaseSession();
       setAuthError("");
     } catch (error) {
       console.error("Error establishing Supabase session:", error);
       setAuthError(error.message || "Unable to connect to Supabase.");
+      setGenerating(false);
       return;
     }
 
@@ -1200,6 +1216,7 @@ export default function DashboardPage() {
     setPreviewPO({ form, items, tc });
     setEditingId(null);
     setShowPreview(true);
+    setGenerating(false);
   };
 
   const handleEditPO = (po) => {
@@ -1332,6 +1349,7 @@ export default function DashboardPage() {
                   updateItem={updateItem} resetForm={resetForm}
                   handleSaveAndGenerate={handleSaveAndGenerate}
                   editingId={editingId}
+                  generating={generating}
                   sf={sf} UNITS={UNITS}
                 />
               )}
