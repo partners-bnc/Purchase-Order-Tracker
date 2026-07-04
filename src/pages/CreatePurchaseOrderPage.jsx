@@ -2,6 +2,23 @@ import React from "react";
 
 const UNITS = ["NOS", "PCS", "KGS", "MTR", "LTR", "BOX", "BAG", "BTL", "CTN", "PKG", "SET", "GM","FEET"];
 
+const CURRENCIES = [
+  { code: "USD", label: "USD – US Dollar" },
+  { code: "CAD", label: "CAD – Canadian Dollar" },
+  { code: "AUD", label: "AUD – Australian Dollar" },
+  { code: "SGD", label: "SGD – Singapore Dollar" },
+  { code: "NZD", label: "NZD – New Zealand Dollar" },
+  { code: "EUR", label: "EUR – Euro" },
+  { code: "GBP", label: "GBP – British Pound" },
+  { code: "INR", label: "INR – Indian Rupee" },
+  { code: "ZAR", label: "ZAR – South African Rand" },
+  { code: "CNY", label: "CNY – Chinese Yuan" },
+  { code: "JPY", label: "JPY – Japanese Yen" },
+  { code: "SAR", label: "SAR – Saudi Riyal" },
+  { code: "AED", label: "AED – UAE Dirham (Dubai)" },
+  { code: "CHF", label: "CHF – Swiss Franc" },
+];
+
 export default function CreatePurchaseOrderPage({
   form, items, tc, gt, amtWords,
   setForm, setItems, setTc, updateItem, resetForm, handleSaveAndGenerate, editingId,
@@ -15,7 +32,26 @@ export default function CreatePurchaseOrderPage({
         <div className="grid3">
           <div className="ff"><label>Voucher No</label><input value={form.voucherNo} onChange={sf("voucherNo")} placeholder="MB/25-26/66" /></div>
           <div className="ff"><label>Date</label><input value={form.date} onChange={sf("date")} placeholder="30-Mar-26" /></div>
-          <div className="ff"><label>Currency</label><select value={form.currency} onChange={sf("currency")}><option>USD</option><option>INR</option><option>EUR</option><option>GBP</option></select></div>
+          <div className="ff">
+            <label>Currency</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <select
+                value={CURRENCIES.find(c => c.code === form.currency) ? form.currency : "OTHER"}
+                onChange={(e) => setForm((prev) => ({ ...prev, currency: e.target.value === "OTHER" ? "" : e.target.value }))}
+              >
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
+                <option value="OTHER">Other...</option>
+              </select>
+              {!CURRENCIES.find(c => c.code === form.currency) && (
+                <input
+                  autoFocus
+                  value={form.currency}
+                  onChange={(e) => setForm((prev) => ({ ...prev, currency: e.target.value.toUpperCase() }))}
+                  placeholder="Type currency code"
+                />
+              )}
+            </div>
+          </div>
           <div className="ff"><label>Reference No.</label><input value={form.refNo} onChange={sf("refNo")} placeholder="MB/25-26/66" /></div>
           <div className="ff"><label>Reference Date</label><input value={form.refDate} onChange={sf("refDate")} placeholder="30 March" /></div>
           <div className="ff"><label>Other References</label><input value={form.otherRef} onChange={sf("otherRef")} placeholder="e.g. anshu" /></div>
