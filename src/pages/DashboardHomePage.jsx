@@ -11,6 +11,7 @@ export default function DashboardHomePage({
   onEditPO, // edits record
   onDeletePO, // deletes record
   onEmailPO, // emails record
+  onDownloadReport, // downloads Excel report (PO workspace only)
 }) {
   const isPO = workspace === "po";
   const { totalOrders = 0, totalsByCurrency = {}, totalReceipts = 0 } = metrics;
@@ -55,9 +56,16 @@ export default function DashboardHomePage({
       {/* Section header */}
       <div className="dash-section-hd">
         {isPO ? "Recent Purchase Orders" : "Recent Donation Receipts"}
-        <button className="btn-sm btn-sm-teal" onClick={onCreatePurchaseOrder}>
-          {isPO ? "＋ New PO" : "＋ New Receipt"}
-        </button>
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          {isPO && onDownloadReport && (
+            <button className="btn-sm btn-sm-out" onClick={onDownloadReport}>
+              ⬇ Download Report
+            </button>
+          )}
+          <button className="btn-sm btn-sm-teal" onClick={onCreatePurchaseOrder}>
+            {isPO ? "＋ New PO" : "＋ New Receipt"}
+          </button>
+        </div>
       </div>
 
       {recentOrders.length === 0 ? (

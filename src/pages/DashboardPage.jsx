@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 import LandingPage from "../components/LandingPage";
 import AppShell from "../components/AppShell";
 import DashboardHomePage from "./DashboardHomePage";
@@ -366,6 +367,53 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .po-amt{font-weight:600;text-align:center;}
 @media print{.modal-toolbar,.modal-bg{display:none!important;} .po-doc{padding:0;}}
 `;
+
+/* ─── EXPORT EXCEL REPORT ───────────────────────────────────────── */
+function exportExcelReport(poList, metrics) {
+  const { totalsByCurrency = {}, completedOrders = 0 } = metrics;
+
+  // ── Sheet 1: KPI — fully dynamic ──
+  const supplierTotals = poList.reduce((acc, p) => {
+    const key = p.supplierName || "Unknown";
+    acc[key] = (acc[key] || 0) + (p.total || 0);
+    return acc;
+  }, {});
+  const topSupplier = Object.entries(supplierTotals).sort((a, b) => b[1] - a[1])[0];
+  const dates = poList.map(p => p.date).filter(Boolean);
+
+  // Every entry here auto-exports — just push more rows in future
+  const kpiRows = [
+    ["KPI", "Value"],
+    ["Total Purchase Orders", poList.length],
+    ["Active Orders", poList.filter(p => p.status === "Active").length],
+    ["Completed Orders", completedOrders],
+    ...Object.entries(totalsByCurrency).map(([cur, amt]) => [`Total Value (${cur})`, Number(amt).toFixed(2)]),
+    ["Unique Suppliers", Object.keys(supplierTotals).length],
+    ["Top Supplier", topSupplier ? topSupplier[0] : "N/A"],
+    ["Top Supplier Total", topSupplier ? Number(topSupplier[1]).toFixed(2) : "0.00"],
+    ["Date Range", dates.length ? `${dates[dates.length - 1]} → ${dates[0]}` : "N/A"],
+    ["Report Generated On", new Date().toLocaleString()],
+  ];
+
+  const ws1 = XLSX.utils.aoa_to_sheet(kpiRows);
+  ws1["!cols"] = [{ wch: 32 }, { wch: 32 }];
+
+  // ── Sheet 2: PO Detail ──
+  const headers = ["S.No.", "Voucher No", "Date", "Supplier", "Invoice To", "Currency", "Items", "Grand Total", "Status"];
+  const detailRows = poList.map((p, i) => [
+    i + 1, p.voucherNo || "", p.date || "", p.supplierName || "",
+    p.invoiceName || "", p.currency || "", p.itemCount || 0,
+    Number(p.total || 0).toFixed(2), p.status || "Active",
+  ]);
+
+  const ws2 = XLSX.utils.aoa_to_sheet([headers, ...detailRows]);
+  ws2["!cols"] = [{ wch: 6 }, { wch: 16 }, { wch: 14 }, { wch: 36 }, { wch: 36 }, { wch: 10 }, { wch: 8 }, { wch: 14 }, { wch: 10 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, "KPI Summary");
+  XLSX.utils.book_append_sheet(wb, ws2, "Purchase Orders");
+  XLSX.writeFile(wb, `PO_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
 
 /* ─── PRINT UTIL (opens print dialog for PDF) ─────────────────── */
 function printElement(elId) {
@@ -1339,6 +1387,7 @@ export default function DashboardPage() {
                   onEditPO={handleEditPO}
                   onDeletePO={(id) => setDeleteId(id)}
                   onEmailPO={(po) => sendEmail(po.form, po.items, po.total)}
+                  onDownloadReport={() => exportExcelReport(poList, dashboardMetrics)}
                 />
               )}
 
